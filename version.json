@@ -1,0 +1,8 @@
+{
+  "version": "1.4.0",
+  "changelog": "Capacitor-обёртка для Android (APK), Telegram-бот для выдачи PRO-ключей, 5 шаблонов смет",
+  "releaseDate": "2026-06-14",
+  "updateUrl": "",
+  "minSupported": "1.0.0",
+  "channel": "https://t.me/smetapro_news"
+}
