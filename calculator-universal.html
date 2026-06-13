@@ -1309,31 +1309,47 @@ function renderEstimates(){
 }
 
 async function loadEstimate(id){
-  const e=DB.estimates.find(x=>x.id===id);if(!e)return;
-  document.getElementById('clientName').value=e.client||'';
-  document.getElementById('estimateNotes').value=e.notes||'';
-  if(document.getElementById('agreedDate'))document.getElementById('agreedDate').value=e.agreedDate||'';
-  if(document.getElementById('agreedTime'))document.getElementById('agreedTime').value=e.agreedTime||'';
-  currentProfile=DB.profiles.find(p=>p.name===e.profileName)?.id || currentProfile;
-  populateProfiles();if(document.getElementById('profileSelect'))document.getElementById('profileSelect').value=currentProfile;
-  currentState={};e.works.forEach(w=>currentState[w.name]=w.qty);
-  e.mats.forEach(m=>{const idx=DB.mats.findIndex(x=>x.name===m.name);if(idx>-1)currentState['_mat_'+idx]=m.qty;});
-  if(document.getElementById('discount'))document.getElementById('discount').value=e.discount||0;
-  if(document.getElementById('markup'))document.getElementById('markup').value=e.markup||0;
-  objectPhotos=Array.isArray(e.objectPhotos)?e.objectPhotos.slice():[];
-  receiptPhotos=Array.isArray(e.receiptPhotos)?e.receiptPhotos.slice():[];
-  // Подпись
-  if(e.signature){
-    const blob=await idbGet('signatures',e.signature);
-    if(blob){
-      const url=URL.createObjectURL(blob);
-      signatureData=e.signature; // храним ключ, не dataURL
-      // рисуем в canvas
-      const c=document.getElementById('sigCanvas');
-      if(c){const ctx=c.getContext('2d');const img=new Image();img.onload=()=>{ctx.drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);};img.src=url;}
-    }else{signatureData=null;}
-  }else{signatureData=null;}
-  renderCalc();switchTab('calc');
+  try{
+    const e=DB.estimates.find(x=>x.id===id);
+    if(!e){console.warn('loadEstimate: estimate not found',id);return;}
+    document.getElementById('clientName').value=e.client||'';
+    document.getElementById('estimateNotes').value=e.notes||'';
+    if(document.getElementById('agreedDate'))document.getElementById('agreedDate').value=e.agreedDate||'';
+    if(document.getElementById('agreedTime'))document.getElementById('agreedTime').value=e.agreedTime||'';
+    // Сначала находим профиль, потом populate (чтобы select знал все варианты)
+    const profMatch=DB.profiles.find(p=>p.name===e.profileName);
+    if(profMatch)currentProfile=profMatch.id;
+    populateProfiles();
+    if(document.getElementById('profileSelect')&&profMatch)document.getElementById('profileSelect').value=currentProfile;
+    // Полный сброс state
+    currentState={};
+    (e.works||[]).forEach(w=>{if(w&&w.name)currentState[w.name]=w.qty||0;});
+    (e.mats||[]).forEach(m=>{const idx=DB.mats.findIndex(x=>x.name===m.name);if(idx>-1)currentState['_mat_'+idx]=m.qty||0;});
+    if(document.getElementById('discount'))document.getElementById('discount').value=e.discount||0;
+    if(document.getElementById('markup'))document.getElementById('markup').value=e.markup||0;
+    objectPhotos=Array.isArray(e.objectPhotos)?e.objectPhotos.filter(Boolean):[];
+    receiptPhotos=Array.isArray(e.receiptPhotos)?e.receiptPhotos.filter(Boolean):[];
+    releaseAllPhotoURLs();
+    // Подпись
+    signatureData=null;
+    if(e.signature&&!e.signature.startsWith('data:')){
+      try{
+        const blob=await idbGet('signatures',e.signature);
+        if(blob){
+          const url=URL.createObjectURL(blob);
+          signatureData=e.signature;
+          const c=document.getElementById('sigCanvas');
+          if(c){const ctx=c.getContext('2d');const img=new Image();img.onload=()=>{ctx.drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);};img.src=url;}
+        }
+      }catch(err){console.warn('loadEstimate: signature load failed',err);}
+    }
+    renderCalc();
+    switchTab('calc');
+    console.log('loadEstimate: OK',id,'works:',(e.works||[]).length,'photos:',objectPhotos.length);
+  }catch(err){
+    console.error('loadEstimate: FATAL',err);
+    alert('Не удалось открыть смету: '+err.message);
+  }
 }
 async function deleteEstimate(id){
   if(!confirm('Удалить смету и все её фото?'))return;
