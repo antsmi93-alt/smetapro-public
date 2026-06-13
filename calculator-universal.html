@@ -1,0 +1,2184 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1e3a8a" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Смета PRO">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<meta name="description" content="Калькулятор смет для мастеров: электрик, сантехник, отделочник. Считайте стоимость работ на объекте, сохраняйте сметы, делитесь с клиентом. Работает офлайн.">
+<meta name="keywords" content="калькулятор смет, смета ремонт, расчёт стоимости работ, для мастера, прораб, электрик, сантехник">
+<meta property="og:title" content="Калькулятор смет PRO">
+<meta property="og:description" content="Калькулятор смет для мастеров. Считайте стоимость работ на объекте, сохраняйте, делитесь с клиентом. Работает офлайн.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="icon-512.png">
+<meta property="og:locale" content="ru_RU">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Калькулятор смет PRO">
+<meta name="twitter:description" content="Калькулятор смет для мастеров. Работает офлайн.">
+
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-152.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="apple-touch-startup-image" href="splash-base.png">
+
+<title>Калькулятор смет PRO</title>
+<style>
+  :root{--bg:#f0f2f5;--card:#fff;--accent:#2563eb;--ok:#059669;--warn:#d97706;--danger:#dc2626;--text:#1f2937;--muted:#6b7280;--border:#e5e7eb;--input:#fff;}
+  *{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent;}
+  body{background:var(--bg);margin:0;padding:12px;color:var(--text);font-size:15px;transition:background .2s,color .2s;}
+  /* === Тёмная тема (auto) === */
+  @media(prefers-color-scheme:dark){
+    :root{--bg:#0f172a;--card:#1e293b;--accent:#60a5fa;--text:#e2e8f0;--muted:#94a3b8;--border:#334155;--input:#0f172a;}
+    input,select,textarea,button{background:var(--input);color:var(--text);border-color:var(--border);}
+    .work-row{background:#0f172a!important;}
+    .works-draft .wd-item{background:#0f172a;}
+    .photo-item{background:#0f172a;}
+  }
+  /* === Тёмная тема (manual) === */
+  body.theme-dark{--bg:#0f172a;--card:#1e293b;--accent:#60a5fa;--text:#e2e8f0;--muted:#94a3b8;--border:#334155;--input:#0f172a;}
+  body.theme-dark input,body.theme-dark select,body.theme-dark textarea,body.theme-dark button{background:var(--input);color:var(--text);border-color:var(--border);}
+  body.theme-dark .work-row{background:#0f172a!important;}
+  body.theme-dark .works-draft .wd-item{background:#0f172a;}
+  body.theme-dark .photo-item{background:#0f172a;}
+  /* Переключатель темы */
+  .theme-toggle{position:fixed;top:8px;right:8px;width:36px;height:36px;border-radius:50%;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;z-index:100;box-shadow:0 2px 6px rgba(0,0,0,.1);}
+  .theme-toggle:hover{transform:scale(1.1);}
+  h1{margin:4px 0 12px;font-size:20px;color:var(--accent);}
+  .card{background:var(--card);border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);}
+  h2{font-size:16px;margin:0 0 10px;color:var(--accent);}
+  h3{font-size:14px;margin:14px 0 6px;color:#374151;border-bottom:1px solid #e5e7eb;padding-bottom:4px;}
+  label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px;}
+  input,select,textarea,button{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:15px;background:#fff;}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12);}
+  textarea{min-height:60px;resize:vertical;}
+  button{background:var(--accent);color:#fff;border:none;font-weight:600;cursor:pointer;margin-top:8px;touch-action:manipulation;}
+  button:active{transform:scale(.98);}
+  button.secondary{background:#e5e7eb;color:#374151;}
+  button.ok{background:var(--ok);}
+  button.warn{background:var(--warn);color:#fff;}
+  button.danger{background:var(--danger);}
+  .row{display:flex;gap:8px;align-items:center;}
+  .row > *{flex:1;}
+  .row .auto{flex:0 0 auto;}
+  table{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px;}
+  th,td{padding:8px 6px;text-align:left;border-bottom:1px solid #e5e7eb;}
+  th{background:#f9fafb;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:.02em;}
+  td{font-size:14px;vertical-align:middle;}
+  .num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;}
+  .small{font-size:12px;color:var(--muted);}
+  .result{font-size:22px;font-weight:700;color:var(--ok);text-align:center;padding:12px;background:#ecfdf5;border-radius:8px;margin-top:8px;}
+  .chip{display:inline-block;padding:3px 10px;border-radius:14px;font-size:12px;font-weight:600;color:#fff;margin:2px;}
+  .chip.ok{background:var(--ok);}
+  .chip.accent{background:var(--accent);}
+  .chip.muted{background:var(--muted);}
+  .chip.warn{background:var(--warn);}
+  .work-row{background:#f9fafb;border-radius:8px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;}
+  .work-row .title{flex:1;font-size:14px;}
+  .work-row .price{color:var(--muted);font-size:12px;}
+  .work-row input.qty{width:70px;text-align:center;padding:6px;font-size:15px;border-radius:6px;}
+  .work-row input[type="checkbox"]{width:22px;height:22px;flex:0 0 22px;accent-color:var(--accent);}
+  .tabs{display:flex;gap:4px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px;}
+  .tab{flex:1;min-width:90px;padding:10px 6px;border-radius:8px;text-align:center;font-size:13px;font-weight:600;color:#6b7280;background:#e5e7eb;border:none;cursor:pointer;white-space:nowrap;margin-top:0;}
+  .tab.active{background:var(--accent);color:#fff;}
+  .section{display:none;}
+  .section.active{display:block;}
+  .estimate-item{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;margin-bottom:8px;}
+  .estimate-item .top{display:flex;justify-content:space-between;align-items:center;}
+  .estimate-item .client{font-weight:600;}
+  .estimate-item .date{font-size:12px;color:var(--muted);}
+  .photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px;}
+  .photo-grid img{width:100%;border-radius:6px;aspect-ratio:1;object-fit:cover;border:1px solid #e5e7eb;}
+  .photo-item{position:relative;}
+  .photo-item .del{position:absolute;top:2px;right:2px;width:26px;height:26px;padding:0;font-size:13px;background:rgba(220,38,38,.85);color:#fff;border:none;border-radius:50%;margin-top:0;z-index:2;}
+  .hint{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.4;}
+  .total-row{background:#f3f4f6;padding:10px;border-radius:6px;font-weight:600;margin-top:8px;}
+  .dropzone{border:2px dashed #cbd5e1;border-radius:10px;padding:18px;text-align:center;color:#6b7280;font-size:13px;margin-top:10px;}
+  .dropzone.dragover{border-color:var(--accent);background:#eff6ff;}
+  .hidden{display:none !important;}
+  .badge{font-size:11px;background:#dbeafe;color:var(--accent);padding:2px 6px;border-radius:4px;font-weight:600;}
+  .paywall{background:linear-gradient(135deg,#fff7ed 0%,#ffedd5 100%);border:2px solid #fed7aa;border-radius:12px;padding:16px;text-align:center;margin:12px 0;}
+  .paywall h3{margin-top:0;color:#c2410c;}
+  .paywall .price{font-size:28px;font-weight:800;color:#ea580c;margin:6px 0;}
+  .watermark{position:fixed;pointer-events:none;z-index:9999;opacity:.08;font-size:48px;font-weight:900;color:#000;transform:rotate(-30deg);white-space:nowrap;}
+  .locked{opacity:.5;position:relative;}
+  .locked::after{content:"🔒";position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:18px;}
+  .feature-list{text-align:left;margin-top:10px;}
+  .feature-list li{margin:6px 0;font-size:14px;}
+  .funnel-card{background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:8px;margin-bottom:6px;font-size:13px;}
+  .funnel-card .amt{font-weight:700;color:#1f2937;}
+  .funnel-card .date{font-size:11px;color:#9ca3af;}
+  .paid-btn{padding:3px 10px;border-radius:12px;font-size:12px;border:none;cursor:pointer;font-weight:600;}
+  .paid-yes{background:#d1fae5;color:#047857;}
+  .paid-no{background:#fee2e2;color:#b91c1c;}
+  .status-select{padding:4px 8px;border-radius:6px;font-size:12px;font-weight:600;border:none;color:#fff;background:#9ca3af;}
+  .status-new{background:#2563eb;}
+  .status-active{background:#d97706;}
+  .status-done{background:#059669;}
+  .status-archive{background:#dc2626;}
+  .funnel-col{flex:1;min-width:130px;background:#f9fafb;border-radius:8px;padding:6px;}
+  .funnel-col h4{margin:0 0 6px;font-size:11px;color:#6b7280;text-align:center;border-bottom:1px solid #e5e7eb;padding-bottom:4px;}
+  .kanban-hint{font-size:12px;color:#9ca3af;text-align:center;margin:6px 0;}
+  .crm-funnel{display:flex;gap:6px;margin-bottom:8px;overflow-x:auto;padding-bottom:4px;}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="themeToggle" title="Переключить тему" aria-label="Тема">🌓</button>
+
+<h1>📋 Калькулятор смет PRO</h1>
+
+<!-- FREE-БАННЕР -->
+<div id="freeBanner" class="paywall hidden">
+  <p>🎁 У вас <b id="trialLeft">3</b> бесплатных сметы</p>
+  <div class="price">490 ₽/мес</div>
+  <p class="small">Сохранение, PDF, подпись клиента, история смет</p>
+  <ul class="feature-list">
+    <li>✅ Безлимитные сметы</li>
+    <li>✅ Фото объекта и чеки</li>
+    <li>✅ Подпись клиента пальцем</li>
+    <li>✅ Красивый PDF</li>
+    <li>✅ QR-код для оплаты</li>
+  </ul>
+  <button class="ok" onclick="unlockDemo()">🔓 Активировать PRO (тест)</button>
+</div>
+
+<!-- Навигация -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('calc')">➕ Смета</button>
+  <button class="tab" onclick="switchTab('estimates')">📁 Сметы</button>
+  <button class="tab" onclick="switchTab('crm')">🧑‍💼 Клиенты</button>
+  <button class="tab" onclick="switchTab('pro')">⭐ PRO</button>
+  <button class="tab" onclick="switchTab('profile')">⚙ Профиль</button>
+</div>
+
+<!-- ВКЛАДКА: СМЕТА -->
+<div id="sec-calc" class="section active">
+
+  <!-- НЕТ ПРОФИЛЯ — ПРИЗЫВ К ДЕЙСТВИЮ -->
+  <div id="noProfileCard" class="card" style="text-align:center;">
+    <h2>👋 Добро пожаловать!</h2>
+    <p>В этом калькуляторе нет готовых шаблонов. <br>Каждый мастер создаёт <b>свой</b> набор работ и цен.</p>
+    <button class="ok" onclick="switchTab('profile')">⚙ Создать свой профиль</button>
+    <p class="small" style="margin-top:10px;">Или загрузите готовый CSV с работами</p>
+    <button class="secondary" onclick="document.getElementById('csvInputMain').click()">📥 Загрузить CSV</button>
+    <input type="file" id="csvInputMain" accept=".csv,.txt" style="display:none" onchange="importProfileCSV(this)">
+  </div>
+
+  <div id="hasProfileBlock">
+    <div class="card">
+      <div class="row">
+        <div>
+          <label>Мой профиль</label>
+          <select id="profileSelect" onchange="renderCalc()"></select>
+        </div>
+        <div style="flex:.4">
+          <label><a href="#" onclick="openEditProfile();return false;">✏ Изменить</a></label>
+          <button class="secondary" style="margin-top:20px" onclick="openNewProfile()">+ Новый</button>
+        </div>
+      </div>
+
+      <label>Клиент / Объект</label>
+      <input type="text" id="clientName" placeholder="Иванов, ул. Ленина 15, кв 3">
+
+      <label>Замеры и примечания</label>
+      <textarea id="estimateNotes" rows="3" placeholder="Высота потолков 2.7м, стены кривые..."></textarea>
+
+      <label>📅 Договорились на объект</label>
+      <input type="date" id="agreedDate" onchange="handleDateChange()">
+      <input type="time" id="agreedTime" value="09:00" style="margin-top:6px;">
+      <div class="hint" id="dateHint" style="color:var(--accent);font-weight:600;display:none;">
+        ⏰ Завтра в 9:00 — не забудьте!
+      </div>
+    </div>
+
+    <!-- ШАБЛОНЫ СМЕТ -->
+    <div class="card" id="templatesCard" style="display:none;">
+      <details>
+        <summary style="cursor:pointer;font-size:14px;font-weight:600;color:var(--accent);">📋 Готовые шаблоны смет</summary>
+        <p class="small" style="margin-top:8px;">Применяется к текущему профилю: добавляет работы с типовыми ценами (можно потом изменить).</p>
+        <div id="templatesList" style="display:grid;grid-template-columns:1fr;gap:6px;margin-top:8px;"></div>
+      </details>
+    </div>
+
+    <!-- РАБОТЫ -->
+    <div class="card">
+      <h2>🔨 Работы</h2>
+      <div id="worksList"></div>
+      <div id="worksTotal" class="total-row">Итого работы: 0 ₽</div>
+    </div>
+
+    <!-- МАТЕРИАЛЫ -->
+    <div class="card">
+      <h2>🧱 Материалы и расходники</h2>
+      <div id="materialsList"></div>
+      <div class="row" style="margin-top:8px;">
+        <div><input type="text" id="addMatName" placeholder="Название"></div>
+        <div><input type="number" id="addMatPrice" placeholder="Цена"></div>
+        <div style="flex:.6"><input type="text" id="addMatUnit" placeholder="ед" value="шт"></div>
+        <div style="flex:.4"><button onclick="addMaterial()">+</button></div>
+      </div>
+      <div id="materialsTotal" class="total-row">Итого материалы: 0 ₽</div>
+    </div>
+
+    <!-- ФОТО ОБЪЕКТА -->
+    <div class="card">
+      <h3>📸 Фото объекта <span class="chip accent" id="objPhotoCount">0</span></h3>
+      <input type="file" accept="image/*" multiple capture="environment" onchange="handlePhotoUpload(this,'object')" style="margin-bottom:8px;">
+      <p class="hint">Фото прикрепляются к смете. Хранятся в памяти телефона.</p>
+      <div id="objectPhotosGrid" class="photo-grid"></div>
+    </div>
+
+    <!-- ЧЕКИ -->
+    <div class="card">
+      <h3>🧾 Чеки на материалы <span class="chip accent" id="recPhotoCount">0</span></h3>
+      <input type="file" accept="image/*" multiple capture="environment" onchange="handlePhotoUpload(this,'receipt')" style="margin-bottom:8px;">
+      <p class="hint">Фотографируйте чеки на кассе — всё сохранится в смете.</p>
+      <div id="receiptPhotosGrid" class="photo-grid"></div>
+    </div>
+
+    <!-- ПОДПИСЬ КЛИЕНТА -->
+    <div class="card locked" id="signatureBlock">
+      <h3>✍️ Подпись клиента</h3>
+      <canvas id="sigCanvas" style="width:100%;height:120px;background:#f9fafb;border-radius:8px;border:2px dashed #d1d5db;"></canvas>
+      <div class="row" style="margin-top:8px;">
+        <button class="secondary" onclick="clearSig()">Очистить</button>
+        <button class="ok" onclick="saveSig()">✓ Сохранить подпись</button>
+      </div>
+      <p class="hint">Клиент ставит подпись пальцем прямо на экране. Доступно в PRO.</p>
+    </div>
+
+    <!-- ИТОГО -->
+    <div class="card">
+      <h2>💰 Итоговый расчёт</h2>
+      <div class="row">
+        <div><label>Скидка, %</label><input type="number" id="discount" value="0" min="0" max="99" onchange="calcTotals()"></div>
+        <div><label>Наценка, %</label><input type="number" id="markup" value="0" min="0" onchange="calcTotals()"></div>
+      </div>
+      <div id="finalResult" class="result">0 ₽</div>
+      <div id="finalBreakdown" class="small" style="text-align:center;margin-top:6px;"></div>
+    </div>
+
+    <button class="ok" id="btnSaveEstimate" onclick="saveEstimate()">💾 Сохранить смету</button>
+    <button class="secondary" onclick="shareEstimate()">📤 Поделиться</button>
+    <button class="secondary locked" id="btnPrint" onclick="printEstimate()">🖨 Печать / PDF</button>
+  </div>
+
+</div>
+
+<!-- ВКЛАДКА: ИСТОРИЯ -->
+<div id="sec-estimates" class="section">
+  <div id="estimatesLocked" class="paywall">
+    <h3>📁 История смет</h3>
+    <p>Сохраняйте все сметы в одном месте. Возвращайтесь к ним позже.</p>
+    <div class="price">490 ₽/мес</div>
+    <button class="ok" onclick="unlockDemo()">Активировать PRO (тест)</button>
+  </div>
+  <div id="estimatesUnlocked" class="hidden">
+    <!-- ФИЛЬТРЫ И СЧЁТЧИКИ (ИСТОРИЯ) -->
+    <div class="card">
+      <div class="row" style="flex-wrap:wrap;gap:6px;">
+        <div style="flex:0 0 auto;min-width:80px;">
+          <div style="font-size:12px;color:#6b7280;">Всего:</div>
+          <div id="statTotal" style="font-size:20px;font-weight:700;">0</div>
+        </div>
+        <div style="flex:0 0 auto;min-width:80px;">
+          <div style="font-size:12px;color:#d97706;">В работе:</div>
+          <div id="statActive" style="font-size:20px;font-weight:700;color:#d97706;">0</div>
+        </div>
+        <div style="flex:0 0 auto;min-width:80px;">
+          <div style="font-size:12px;color:#059669;">Завершено:</div>
+          <div id="statDone" style="font-size:20px;font-weight:700;color:#059669;">0</div>
+        </div>
+        <div style="flex:0 0 auto;min-width:80px;">
+          <div style="font-size:12px;color:#dc2626;">Архив:</div>
+          <div id="statArchive" style="font-size:20px;font-weight:700;color:#dc2626;">0</div>
+        </div>
+        <div style="flex:0 0 auto;min-width:80px;">
+          <div style="font-size:12px;color:#2563eb;">💰 Оплачено:</div>
+          <div id="statPaid" style="font-size:20px;font-weight:700;color:#2563eb;">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="gap:4px;">
+        <button id="filterAll" class="tab active" onclick="setFilter('all')" style="flex:1;min-width:auto;">Все</button>
+        <button id="filterActive" class="tab" onclick="setFilter('active')" style="flex:1;min-width:auto;">🟠 В работе</button>
+        <button id="filterDone" class="tab" onclick="setFilter('done')" style="flex:1;min-width:auto;">🟢 Завершено</button>
+        <button id="filterArchive" class="tab" onclick="setFilter('archive')" style="flex:1;min-width:auto;">🔴 Архив</button>
+        <button id="filterUnpaid" class="tab" onclick="setFilter('unpaid')" style="flex:1;min-width:auto;">❌ Не оплачено</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div id="estimatesList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ВКЛАДКА: КЛИЕНТЫ (CRM) -->
+<div id="sec-crm" class="section">
+  <div id="crmLocked" class="paywall">
+    <h3>🧑‍💼 CRM и клиенты</h3>
+    <p>Ведите клиентов: статусы, оплата, воронка.</p>
+    <div class="price">490 ₽/мес</div>
+    <button class="ok" onclick="unlockDemo()">Активировать PRO (тест)</button>
+  </div>
+  <div id="crmUnlocked" class="hidden">
+    <!-- Счётчики -->
+    <div class="card">
+      <div class="row" style="flex-wrap:wrap;gap:6px;">
+        <div style="flex:0 0 auto;min-width:80px;">
+          <div style="font-size:12px;color:#6b7280;">Всего:</div>
+          <div id="crmStatTotal" style="font-size:20px;font-weight:700;">0</div>
+        </div>
+        <div style="flex:0 0 auto;min-width:80px;">
+          <div style="font-size:12px;color:#2563eb;">Новые:</div>
+          <div id="crmStatNew" style="font-size:20px;font-weight:700;color:#2563eb;">0</div>
+        </div>
+        <div style="flex:0 0 auto;min-width:80px;">
+          <div style="font-size:12px;color:#d97706;">В работе:</div>
+          <div id="crmStatActive" style="font-size:20px;font-weight:700;color:#d97706;">0</div>
+        </div>
+        <div style="flex:0 0 auto;min-width:80px;">
+          <div style="font-size:12px;color:#059669;">Готово:</div>
+          <div id="crmStatDone" style="font-size:20px;font-weight:700;color:#059669;">0</div>
+        </div>
+        <div style="flex:0 0 auto;min-width:80px;">
+          <div style="font-size:12px;color:#7c3aed;">💰 Оплачено:</div>
+          <div id="crmStatRevenue" style="font-size:18px;font-weight:700;color:#7c3aed;">0₽</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Фильтры -->
+    <div class="card">
+      <div class="row" style="gap:4px;">
+        <button id="crmFilterAll" class="tab active" onclick="setCrmFilter('all')" style="flex:1;min-width:auto;">Все</button>
+        <button id="crmFilterNew" class="tab" onclick="setCrmFilter('new')" style="flex:1;min-width:auto;">🆕 Новые</button>
+        <button id="crmFilterActive" class="tab" onclick="setCrmFilter('active')" style="flex:1;min-width:auto;">🟠 В работе</button>
+        <button id="crmFilterDone" class="tab" onclick="setCrmFilter('done')" style="flex:1;min-width:auto;">🟢 Готово</button>
+        <button id="crmFilterArchive" class="tab" onclick="setCrmFilter('archive')" style="flex:1;min-width:auto;">🔴 Архив</button>
+        <button id="crmFilterUnpaid" class="tab" onclick="setCrmFilter('unpaid')" style="flex:1;min-width:auto;">🚫 Долг</button>
+      </div>
+    </div>
+
+    <!-- Список клиентов: воронка -->
+    <div class="card" id="crmListCard">
+      <h2>📊 Воронка (Kanban)</h2>
+      <div id="crmList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ВКЛАДКА: PRO -->
+<div id="sec-pro" class="section">
+  <div class="card" id="proPageActive" style="display:none;">
+    <h2 style="color:#059669;">⭐ PRO активен</h2>
+    <p>Спасибо за поддержку! Все функции разблокированы.</p>
+    <p>Срок действия: <b id="proExpiryText"></b></p>
+    <button class="secondary" onclick="openProKeyModal()">🔑 Ввести новый ключ</button>
+    <button class="danger" style="margin-top:8px" onclick="deactivatePro()">Деактивировать</button>
+  </div>
+
+  <div class="card" id="proPageInactive">
+    <h2>⭐ Калькулятор смет PRO</h2>
+    <p>Полная версия для мастера, который работает каждый день.</p>
+
+    <h3>Что входит в PRO</h3>
+    <ul style="line-height:1.8;">
+      <li>♾️ <b>Без лимита</b> на количество смет (бесплатно — 3)</li>
+      <li>📁 <b>История всех смет</b> с фильтрами по статусу</li>
+      <li>🧑‍💼 <b>CRM клиентов</b>: контакты, статусы, воронка продаж</li>
+      <li>✍️ <b>Подпись клиента</b> прямо на экране</li>
+      <li>🖨 <b>PDF-экспорт</b> красивой сметы для печати</li>
+      <li>🔔 <b>Напоминания</b> о визитах и оплатах</li>
+      <li>💳 <b>QR-код</b> для приёма оплаты (СБП, по карте)</li>
+      <li>📊 <b>Статистика</b> по месяцам и клиентам</li>
+      <li>☁️ <b>Синхронизация</b> между устройствами</li>
+      <li>🚀 <b>Новые фичи</b> первыми</li>
+    </ul>
+
+    <div style="background:linear-gradient(135deg,#1e3a8a,#3b82f6);color:#fff;padding:16px;border-radius:12px;margin:14px 0;text-align:center;">
+      <div style="font-size:13px;opacity:.85;">Стоимость</div>
+      <div style="font-size:32px;font-weight:700;margin:4px 0;">490 ₽/мес</div>
+      <div style="font-size:13px;opacity:.85;">или 4 900 ₽/год (экономия 16%)</div>
+    </div>
+
+    <button class="ok" style="width:100%;padding:14px;font-size:16px;" onclick="openProKeyModal()">🔑 У меня уже есть ключ</button>
+    <button style="width:100%;padding:14px;font-size:16px;background:#0088cc;margin-top:8px;" onclick="window.open('https://t.me/smetapro_bot','_blank')">💬 Купить в Telegram</button>
+    <a href="https://t.me/smetapro_news" target="_blank" style="display:block;margin-top:8px;text-align:center;font-size:13px;color:var(--muted);">📢 Канал обновлений</a>
+    <p class="hint" style="margin-top:12px;text-align:center;">Оплата через Telegram-бот, ключ приходит автоматически. Без подписок, без скрытых платежей.</p>
+  </div>
+
+  <div class="card">
+    <h3>Частые вопросы</h3>
+    <details><summary><b>Это разовая оплата или подписка?</b></summary><p style="margin-top:8px;">И подписка, и разовая — на выбор. При помесячной оплате 490 ₽/мес, при годовой — 4 900 ₽ (экономия 16%). Ключ привязан к устройству.</p></details>
+    <details><summary><b>Что будет, когда закончится срок ключа?</b></summary><p style="margin-top:8px;">Приложение продолжит работать, но лимит в 3 сметы снова включится, пока не введёте новый ключ.</p></details>
+    <details><summary><b>Можно перенести ключ на другой телефон?</b></summary><p style="margin-top:8px;">Да. Введите тот же ключ в «⚙ Профиль» → 🔑 Активация PRO — он подходит для любого количества устройств.</p></details>
+    <details><summary><b>Данные утекают на сервер?</b></summary><p style="margin-top:8px;">Нет. Всё хранится в вашем браузере (localStorage). Подробнее — в <a href="privacy.html" target="_blank">Privacy Policy</a>.</p></details>
+  </div>
+</div>
+
+<!-- ВКЛАДКА: ПРОФИЛЬ -->
+<div id="sec-profile" class="section">
+  <div class="card">
+    <h2>⚙ Настройки профиля</h2>
+    <label>Название профиля</label>
+    <input type="text" id="profName">
+    <label>Работы</label>
+    <input type="search" id="profWorksFilter" placeholder="🔍 Поиск по работам..." oninput="renderProfWorksDraft()" style="margin-bottom:6px;">
+    <div id="profWorksList" class="works-draft"></div>
+    <button class="secondary" type="button" onclick="openWorkModal()" style="margin-top:8px;width:100%;">➕ Добавить работу</button>
+    <div class="hint">Каждый мастер настраивает свои цены.&#10;Добавьте столько работ, сколько нужно.</div>
+    <div class="row" style="margin-top:12px;">
+      <button onclick="saveProfile()">💾 Сохранить профиль</button>
+      <button class="danger" onclick="deleteProfile()">🗑 Удалить</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📥 Загрузить прайс CSV</h3>
+    <div class="dropzone" id="dropZone" onclick="document.getElementById('csvProfile').click()"
+         ondragover="event.preventDefault();this.classList.add('dragover')"
+         ondragleave="this.classList.remove('dragover')"
+         ondrop="handleDrop(event)">
+      <b>Нажми или перетащи CSV с работами</b>
+      <p class="small">Формат: Название работы;Цена;Единица</p>
+    </div>
+    <input type="file" id="csvProfile" accept=".csv,.txt" style="display:none" onchange="importProfileCSV(this)">
+    <p class="hint">Загрузите готовый прайс — не нужно вводить каждую работу вручную.</p>
+  </div>
+
+  <div class="card">
+    <h3>📤 Экспорт / импорт базы</h3>
+    <button onclick="exportJSON()">📥 Сохранить JSON (бэкап)</button>
+    <button class="warn" onclick="document.getElementById('fileInput').click()">📤 Загрузить JSON</button>
+    <input type="file" id="fileInput" accept=".json" style="display:none" onchange="importJSON(this)">
+    <p class="small">Перенос на другой телефон — через JSON. Фото не переносятся.</p>
+  </div>
+
+  <div class="card">
+    <h3>🔑 PRO-ключ</h3>
+    <p class="small" id="proStatusShort">Открой вкладку «⭐ PRO» или нажми кнопку ниже, чтобы активировать полную версию.</p>
+    <button onclick="openProKeyModal()">🔑 Ввести PRO-ключ</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  БАЗА ДАННЫХ — БЕЗ ГОТОВЫХ ПРОФИЛЕЙ
+// ═══════════════════════════════════════════════════════
+
+let DB = JSON.parse(localStorage.getItem('calc_pro_v2'));
+if(!DB){
+  DB = {profiles:[], estimates:[], mats:[], usage:{savedCount:0, isPro:false}};
+}
+function saveDB(){localStorage.setItem('calc_pro_v2',JSON.stringify(DB));}
+
+// ═══════════════════════════════════════════════════════
+//  IndexedDB — хранилище для фото и подписей
+//  Лимит: до 50% свободного диска (на практике 1-10 ГБ)
+//  localStorage (5 МБ) используем только для метаданных смет
+// ═══════════════════════════════════════════════════════
+const IDB_NAME='smeta-pro';
+const IDB_VERSION=1;
+let _idbPromise=null;
+
+function openIDB(){
+  if(_idbPromise)return _idbPromise;
+  _idbPromise=new Promise((resolve,reject)=>{
+    if(!('indexedDB' in window)){reject(new Error('IndexedDB не поддерживается'));return;}
+    const req=indexedDB.open(IDB_NAME,IDB_VERSION);
+    req.onupgradeneeded=()=>{
+      const db=req.result;
+      if(!db.objectStoreNames.contains('photos'))db.createObjectStore('photos');
+      if(!db.objectStoreNames.contains('signatures'))db.createObjectStore('signatures');
+    };
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error);
+  });
+  return _idbPromise;
+}
+
+async function idbPut(store,key,blob){
+  const db=await openIDB();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(store,'readwrite');
+    tx.objectStore(store).put(blob,key);
+    tx.oncomplete=()=>resolve();
+    tx.onerror=()=>reject(tx.error);
+  });
+}
+
+async function idbGet(store,key){
+  const db=await openIDB();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(store,'readonly');
+    const req=tx.objectStore(store).get(key);
+    req.onsuccess=()=>resolve(req.result||null);
+    req.onerror=()=>reject(req.error);
+  });
+}
+
+async function idbDelete(store,key){
+  const db=await openIDB();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(store,'readwrite');
+    tx.objectStore(store).delete(key);
+    tx.oncomplete=()=>resolve();
+    tx.onerror=()=>reject(tx.error);
+  });
+}
+
+async function idbGetMany(store,keys){
+  const db=await openIDB();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(store,'readonly');
+    const out=new Map();
+    let remaining=keys.length;
+    if(remaining===0){resolve(out);return;}
+    keys.forEach(k=>{
+      const r=tx.objectStore(store).get(k);
+      r.onsuccess=()=>{out.set(k,r.result||null);if(--remaining===0)resolve(out);};
+      r.onerror=()=>{if(--remaining===0)resolve(out);};
+    });
+  });
+}
+
+// Сжимаем dataURL (из canvas.toDataURL) в Blob для IndexedDB
+// Экономия памяти: Blob хранится бинарно, не как base64-строка
+function dataURLtoBlob(dataURL){
+  const [head,b64]=dataURL.split(',');
+  const mime=(head.match(/data:([^;]+)/)||[])[1]||'image/jpeg';
+  const bin=atob(b64);
+  const arr=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
+  return new Blob([arr],{type:mime});
+}
+
+// Создаёт object URL из ключа в IndexedDB (для <img src=...>)
+// Кешируем URL'ы в Map, чтобы не плодить их на каждый рендер
+const _idbUrlCache=new Map();
+async function getPhotoURL(store,key){
+  if(!key)return'';
+  if(_idbUrlCache.has(key))return _idbUrlCache.get(key);
+  const blob=await idbGet(store,key);
+  if(!blob)return'';
+  const url=URL.createObjectURL(blob);
+  _idbUrlCache.set(key,url);
+  return url;
+}
+function releasePhotoURL(key){
+  if(_idbUrlCache.has(key)){URL.revokeObjectURL(_idbUrlCache.get(key));_idbUrlCache.delete(key);}
+}
+function releaseAllPhotoURLs(){_idbUrlCache.forEach(u=>URL.revokeObjectURL(u));_idbUrlCache.clear();}
+
+const DEFAULT_PROFILES = [
+  {
+    id:"elec", name:"⚡ Электрик",
+    works:[
+      {name:"Диагностика/выезд",price:500,unit:"шт"},
+      {name:"Установка розетки",price:350,unit:"шт"},
+      {name:"Установка выключателя",price:350,unit:"шт"},
+      {name:"Прокладка кабеля в гофре",price:120,unit:"п.м"},
+      {name:"Прокладка кабеля открыто",price:80,unit:"п.м"},
+      {name:"Монтаж щитка",price:1200,unit:"шт"},
+      {name:"Установка автомата",price:300,unit:"шт"},
+      {name:"Установка люстры",price:800,unit:"шт"},
+      {name:"Штробление (кирпич)",price:350,unit:"п.м"},
+      {name:"Штробление (бетон)",price:550,unit:"п.м"},
+    ]
+  },
+  {
+    id:"plumb", name:"🔧 Сантехник",
+    works:[
+      {name:"Выезд/диагностика",price:600,unit:"шт"},
+      {name:"Установка смесителя",price:800,unit:"шт"},
+      {name:"Установка раковины",price:1500,unit:"шт"},
+      {name:"Установка унитаза",price:1800,unit:"шт"},
+      {name:"Установка ванны",price:2500,unit:"шт"},
+      {name:"Установка душевой кабины",price:4000,unit:"шт"},
+      {name:"Сварка полипропилена Ø20",price:250,unit:"точка"},
+      {name:"Сварка полипропилена Ø32",price:400,unit:"точка"},
+      {name:"Прокладка трубы открыто",price:150,unit:"п.м"},
+      {name:"Прочистка канализации",price:1500,unit:"шт"},
+    ]
+  },
+  {
+    id:"gas", name:"🔥 Газовщик",
+    works:[
+      {name:"Выезд/диагностика",price:700,unit:"шт"},
+      {name:"Установка газовой плиты",price:1500,unit:"шт"},
+      {name:"Установка газовой колонки",price:2500,unit:"шт"},
+      {name:"Установка котла",price:4500,unit:"шт"},
+      {name:"Замена газового крана",price:800,unit:"шт"},
+      {name:"Перенос газовой точки",price:3500,unit:"точка"},
+    ]
+  },
+  {
+    id:"rep", name:"🔨 Отделочник",
+    works:[
+      {name:"Шпатлёвка стен под обои",price:350,unit:"м2"},
+      {name:"Поклейка обоев (флизелин)",price:350,unit:"м2"},
+      {name:"Покраска стен",price:300,unit:"м2"},
+      {name:"Монтаж ГКЛ стена",price:650,unit:"м2"},
+      {name:"Укладка плитки (стена)",price:900,unit:"м2"},
+      {name:"Укладка ламината",price:450,unit:"м2"},
+      {name:"Установка плинтуса",price:90,unit:"п.м"},
+      {name:"Установка двери",price:3500,unit:"шт"},
+    ]
+  },
+  {
+    id:"hvac", name:"🌬 Вентиляция/кондиционеры",
+    works:[
+      {name:"Выезд/оценка",price:500,unit:"шт"},
+      {name:"Монтаж сплит-системы",price:5500,unit:"шт"},
+      {name:"Монтаж воздуховода",price:350,unit:"п.м"},
+      {name:"Чистка сплита",price:2500,unit:"шт"},
+    ]
+  },
+  {
+    id:"sw", name:"⚡🔧 Автоэлектрик",
+    works:[
+      {name:"Диагностика",price:800,unit:"шт"},
+      {name:"Установка сигнализации",price:3500,unit:"шт"},
+      {name:"Установка магнитолы",price:1500,unit:"шт"},
+      {name:"Ремонт проводки",price:2000,unit:"шт"},
+      {name:"Перетяжка салона",price:15000,unit:"компл"},
+    ]
+  },
+  {
+    id:"mech", name:"🔩 Автомеханик",
+    works:[
+      {name:"Замена масла ДВС",price:800,unit:"шт"},
+      {name:"Замена тормозных колодок",price:1500,unit:"ось"},
+      {name:"Диагностика ходовой",price:1200,unit:"шт"},
+      {name:"Замена амортизатора",price:2500,unit:"шт"},
+      {name:"Развал-схождение",price:2500,unit:"шт"},
+    ]
+  },
+  {
+    id:"weld", name:"🔧 Сварщик",
+    works:[
+      {name:"Выезд",price:1000,unit:"шт"},
+      {name:"Сварка металла 3 мм",price:500,unit:"п.м"},
+      {name:"Сварка нержавейки",price:800,unit:"п.м"},
+      {name:"Сварка алюминия",price:1200,unit:"п.м"},
+      {name:"Изготовление металлоконструкции",price:5000,unit:"шт"},
+    ]
+  },
+  {
+    id:"join", name:"🪚 Столяр/мебельщик",
+    works:[
+      {name:"Выезд/замер",price:500,unit:"шт"},
+      {name:"Сборка кухни",price:3500,unit:"м.п."},
+      {name:"Сборка шкафа-купе",price:4500,unit:"шт"},
+      {name:"Установка столешницы",price:2000,unit:"шт"},
+      {name:"Реставрация двери",price:3000,unit:"шт"},
+    ]
+  },
+  {
+    id:"paint", name:"🎨 Маляр-штукатур",
+    works:[
+      {name:"Штукатурка стен",price:450,unit:"м2"},
+      {name:"Шпатлёвка под покраску",price:450,unit:"м2"},
+      {name:"Покраска потолка",price:350,unit:"м2"},
+      {name:"Декоративная штукатурка",price:1200,unit:"м2"},
+      {name:"Покраска батареи",price:800,unit:"шт"},
+    ]
+  },
+  {
+    id:"tiler", name:"🟫 Плиточник",
+    works:[
+      {name:"Укладка плитки стена",price:900,unit:"м2"},
+      {name:"Укладка плитки пол",price:1100,unit:"м2"},
+      {name:"Укладка керамогранита",price:1300,unit:"м2"},
+      {name:"Затирка швов",price:250,unit:"м2"},
+      {name:"Резка плитки под 45°",price:300,unit:"м.п."},
+    ]
+  },
+  {
+    id:"carp", name:"🪵 Плотник",
+    works:[
+      {name:"Выезд",price:600,unit:"шт"},
+      {name:"Монтаж деревянного пола",price:700,unit:"м2"},
+      {name:"Установка лестницы",price:15000,unit:"шт"},
+      {name:"Монтаж террасной доски",price:850,unit:"м2"},
+    ]
+  },
+  {
+    id:"roof", name:"🏠 Кровельщик",
+    works:[
+      {name:"Осмотр/оценка",price:1000,unit:"шт"},
+      {name:"Монтаж металлочерепицы",price:1200,unit:"м2"},
+      {name:"Монтаж мягкой кровли",price:900,unit:"м2"},
+      {name:"Монтаж водостока",price:450,unit:"п.м"},
+      {name:"Ремонт протечки",price:3000,unit:"шт"},
+    ]
+  },
+  {
+    id:"ceil", name:"⬜ Натяжные потолки",
+    works:[
+      {name:"Замер",price:500,unit:"шт"},
+      {name:"Монтаж матового потолка",price:900,unit:"м2"},
+      {name:"Монтаж глянцевого потолка",price:1100,unit:"м2"},
+      {name:"Монтаж двухуровневого",price:2500,unit:"м2"},
+    ]
+  },
+  {
+    id:"win", name:"🔒 Окна и двери",
+    works:[
+      {name:"Демонтаж старого окна",price:800,unit:"шт"},
+      {name:"Установка пластикового окна",price:3500,unit:"шт"},
+      {name:"Установка входной двери",price:4500,unit:"шт"},
+      {name:"Установка балконного блока",price:6500,unit:"шт"},
+    ]
+  },
+  {
+    id:"brick", name:"🧱 Каменщик/бетонщик",
+    works:[
+      {name:"Кладка кирпича",price:900,unit:"м2"},
+      {name:"Кладка блока",price:700,unit:"м2"},
+      {name:"Заливка фундамента",price:4500,unit:"м3"},
+      {name:"Армирование",price:350,unit:"п.м"},
+    ]
+  },
+  {
+    id:"balc", name:"🏗 Балконы/лоджии",
+    works:[
+      {name:"Остекление балкона",price:18000,unit:"шт"},
+      {name:"Утепление балкона",price:8500,unit:"шт"},
+      {name:"Обшивка вагонкой",price:2500,unit:"шт"},
+      {name:"Монтаж крыши на балкон",price:12000,unit:"шт"},
+    ]
+  },
+  {
+    id:"scs", name:"📡 Слаботочка (СКС)",
+    works:[
+      {name:"Прокладка интернет-кабеля",price:30,unit:"п.м"},
+      {name:"Установка розетки RJ-45",price:250,unit:"шт"},
+      {name:"Настройка роутера",price:800,unit:"шт"},
+      {name:"Монтаж серверной стойки",price:5000,unit:"шт"},
+    ]
+  },
+  {
+    id:"cctv", name:"📹 Видеонаблюдение",
+    works:[
+      {name:"Выезд/оценка",price:700,unit:"шт"},
+      {name:"Установка IP-камеры",price:1500,unit:"шт"},
+      {name:"Установка видеорегистратора",price:2500,unit:"шт"},
+      {name:"Настройка удалённого доступа",price:1200,unit:"шт"},
+    ]
+  },
+  {
+    id:"detail", name:"🚗 Автомойка/детейлинг",
+    works:[
+      {name:"Мойка кузова",price:500,unit:"шт"},
+      {name:"Химчистка салона",price:4500,unit:"шт"},
+      {name:"Полировка кузова",price:8000,unit:"шт"},
+      {name:"Нанесение защитного покрытия",price:12000,unit:"шт"},
+    ]
+  },
+  {
+    id:"clean", name:"🧹 Клининг (после ремонта)",
+    works:[
+      {name:"Уборка после ремонта (комната)",price:2500,unit:"шт"},
+      {name:"Уборка квартиры 1-комн.",price:4500,unit:"шт"},
+      {name:"Уборка квартиры 2-комн.",price:6500,unit:"шт"},
+      {name:"Мытьё окон",price:350,unit:"шт"},
+    ]
+  },
+  {
+    id:"wind_clean", name:"🪟 Мойка окон/фасадов",
+    works:[
+      {name:"Мойка окна (одностворчатого)",price:300,unit:"шт"},
+      {name:"Мытьё фасада",price:35,unit:"м2"},
+      {name:"Мытьё витрин",price:50,unit:"м2"},
+    ]
+  },
+  {
+    id:"garden", name:"🌳 Садовник/ландшафт",
+    works:[
+      {name:"Покос травы",price:25,unit:"м2"},
+      {name:"Обрезка деревьев",price:1500,unit:"шт"},
+      {name:"Укладка рулонного газона",price:180,unit:"м2"},
+      {name:"Посадка кустарника",price:500,unit:"шт"},
+    ]
+  },
+  {
+    id:"appl", name:"🔧 Ремонт бытовой техники",
+    works:[
+      {name:"Диагностика",price:500,unit:"шт"},
+      {name:"Ремонт холодильника",price:2500,unit:"шт"},
+      {name:"Ремонт стиральной машины",price:2800,unit:"шт"},
+      {name:"Ремонт посудомойки",price:2500,unit:"шт"},
+      {name:"Замена ТЭНа",price:1200,unit:"шт"},
+    ]
+  },
+  {
+    id:"it", name:"🖥 Компьютерный мастер",
+    works:[
+      {name:"Выезд",price:800,unit:"шт"},
+      {name:"Установка Windows",price:1500,unit:"шт"},
+      {name:"Чистка от пыли",price:1200,unit:"шт"},
+      {name:"Замена термопасты",price:800,unit:"шт"},
+      {name:"Установка программ",price:500,unit:"шт"},
+    ]
+  },
+];
+
+function maybeCreateDemo(){
+  if(DB.profiles.length===0){
+    DB.profiles=JSON.parse(JSON.stringify(DEFAULT_PROFILES));
+    saveDB();
+  }
+}
+
+let currentProfile = '';
+let currentState = {};
+let objectPhotos=[];
+let receiptPhotos=[];
+let signatureData=null;
+
+// ═══════════════════════════════════════════════════════
+//  UI — НАВИГАЦИЯ
+// ═══════════════════════════════════════════════════════
+
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  if(event&&event.target) event.target.classList.add('active');
+  document.getElementById('sec-'+name).classList.add('active');
+  if(name==='estimates') renderEstimates();
+  if(name==='crm') renderCRM();
+  if(name==='pro') renderProPage();
+}
+
+// ═══════════════════════════════════════════════════════
+//  ШАБЛОНЫ СМЕТ — готовые наборы работ для типовых объектов
+// ═══════════════════════════════════════════════════════
+const TEMPLATES=[
+  {
+    id:'bath_full',name:'🛁 Санузел под ключ (4 м²)',profile:['🔧 Сантехник','🔨 Отделочник','🟫 Плиточник'],
+    works:[
+      {name:'Демонтаж плитки',price:280,unit:'м²'},
+      {name:'Выравнивание стен',price:450,unit:'м²'},
+      {name:'Гидроизоляция',price:350,unit:'м²'},
+      {name:'Укладка плитки на стены',price:850,unit:'м²'},
+      {name:'Укладка плитки на пол',price:900,unit:'м²'},
+      {name:'Затирка швов',price:120,unit:'м²'},
+      {name:'Установка ванны',price:2500,unit:'шт'},
+      {name:'Установка унитаза',price:1500,unit:'шт'},
+      {name:'Установка раковины',price:1200,unit:'шт'},
+      {name:'Установка смесителя',price:600,unit:'шт'},
+      {name:'Прокладка труб водоснабжения',price:380,unit:'п.м'},
+      {name:'Прокладка канализации',price:420,unit:'п.м'},
+      {name:'Установка счётчиков воды',price:800,unit:'шт'},
+      {name:'Монтаж реечного потолка',price:650,unit:'м²'},
+      {name:'Электроточка (розетка/свет)',price:450,unit:'точка'},
+    ]
+  },
+  {
+    id:'kitchen_full',name:'🍳 Кухня под ключ (10 м²)',profile:['🔨 Отделочник','🟫 Плиточник','⚡ Электрик'],
+    works:[
+      {name:'Демонтаж старого покрытия',price:200,unit:'м²'},
+      {name:'Выравнивание стен',price:380,unit:'м²'},
+      {name:'Покраска стен',price:280,unit:'м²'},
+      {name:'Укладка ламината',price:350,unit:'м²'},
+      {name:'Укладка плитки на фартук',price:1100,unit:'м²'},
+      {name:'Установка плинтуса',price:120,unit:'п.м'},
+      {name:'Монтаж электроточки',price:450,unit:'точка'},
+      {name:'Прокладка кабеля',price:120,unit:'п.м'},
+      {name:'Установка подвесного потолка',price:550,unit:'м²'},
+      {name:'Установка люстры',price:600,unit:'шт'},
+    ]
+  },
+  {
+    id:'electrics_1room',name:'⚡ Электрика в однушке',profile:['⚡ Электрик'],
+    works:[
+      {name:'Прокладка кабеля ВВГ 3x2.5',price:140,unit:'п.м'},
+      {name:'Прокладка кабеля ВВГ 3x1.5',price:120,unit:'п.м'},
+      {name:'Штробление в бетоне',price:280,unit:'п.м'},
+      {name:'Установка подрозетника',price:200,unit:'шт'},
+      {name:'Установка розетки',price:300,unit:'шт'},
+      {name:'Установка выключателя',price:280,unit:'шт'},
+      {name:'Монтаж люстры',price:700,unit:'шт'},
+      {name:'Монтаж щитка на 12 модулей',price:2500,unit:'шт'},
+      {name:'Установка автомата',price:350,unit:'шт'},
+      {name:'Установка УЗО',price:500,unit:'шт'},
+      {name:'Прозвонка и маркировка',price:150,unit:'точка'},
+    ]
+  },
+  {
+    id:'painting',name:'🎨 Покраска стен (комната 18 м²)',profile:['🎨 Маляр-штукатур','🔨 Отделочник'],
+    works:[
+      {name:'Очистка стен от обоев',price:120,unit:'м²'},
+      {name:'Грунтовка',price:80,unit:'м²'},
+      {name:'Шпатлёвка 2 слоя',price:280,unit:'м²'},
+      {name:'Шлифовка',price:100,unit:'м²'},
+      {name:'Покраска 2 слоя',price:250,unit:'м²'},
+      {name:'Поклейка малярного скотча',price:60,unit:'п.м'},
+    ]
+  },
+  {
+    id:'laminate',name:'🪵 Ламинат в комнате 20 м²',profile:['🔨 Отделочник','🪵 Плотник'],
+    works:[
+      {name:'Демонтаж старого покрытия',price:150,unit:'м²'},
+      {name:'Выравнивание пола (наливной)',price:280,unit:'м²'},
+      {name:'Укладка подложки',price:60,unit:'м²'},
+      {name:'Укладка ламината',price:380,unit:'м²'},
+      {name:'Установка плинтуса',price:140,unit:'п.м'},
+      {name:'Установка порожка',price:400,unit:'шт'},
+    ]
+  },
+];
+
+function renderTemplates(){
+  const card=document.getElementById('templatesCard');
+  const list=document.getElementById('templatesList');
+  if(!card||!list)return;
+  const p=getProfile(currentProfile);
+  if(!p){card.style.display='none';return;}
+  card.style.display='block';
+  list.innerHTML=TEMPLATES.map(t=>{
+    const matches=t.profile.some(name=>p.name.includes(name.split(' ')[1]))||t.profile.length===0;
+    return `<button class="secondary" style="text-align:left;${matches?'border-left:3px solid var(--accent);':''}" onclick="applyTemplate('${t.id}')">${t.name}<div class="small" style="font-weight:normal;opacity:.7;">${t.works.length} работ</div></button>`;
+  }).join('');
+}
+
+function applyTemplate(tplId){
+  const t=TEMPLATES.find(x=>x.id===tplId);if(!t)return;
+  const p=getProfile(currentProfile);if(!p){alert('Сначала выберите профиль');return;}
+  if(!confirm(`Применить шаблон «${t.name}»?\n\nВ профиль «${p.name}» будет добавлено ${t.works.length} работ. Существующие работы с такими же названиями обновятся по цене.`))return;
+  let added=0,updated=0;
+  t.works.forEach(tw=>{
+    const existing=p.works.find(w=>w.name===tw.name);
+    if(existing){existing.price=tw.price;existing.unit=tw.unit;updated++;}
+    else{p.works.push({name:tw.name,price:tw.price,unit:tw.unit});added++;}
+  });
+  // Сохраняем профиль
+  const profIdx=DB.profiles.findIndex(x=>x.id===currentProfile);
+  if(profIdx>-1){DB.profiles[profIdx]=p;saveDB();}
+  alert(`✓ Добавлено: ${added}, обновлено: ${updated}`);
+  renderCalc();
+}
+
+function populateProfiles(){
+  const sel=document.getElementById('profileSelect');
+  if(!sel)return;
+  sel.innerHTML='';
+  DB.profiles.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.name;sel.appendChild(o);});
+  if(DB.profiles.length>0){
+    sel.value=currentProfile||DB.profiles[0].id;
+    currentProfile=sel.value;
+  }
+}
+
+function getProfile(pid){return DB.profiles.find(p=>p.id===pid)||DB.profiles[0];}
+
+function updateUIState(){
+  const hasProfile=DB.profiles.length>0;
+  document.getElementById('noProfileCard').classList.toggle('hidden',hasProfile);
+  document.getElementById('hasProfileBlock').classList.toggle('hidden',!hasProfile);
+
+  // Авто-деактивация по истечении ключа
+  if(DB.usage.isPro&&DB.usage.proExpiry&&DB.usage.proExpiry<Date.now()){
+    DB.usage.isPro=false;delete DB.usage.proExpiry;saveDB();
+  }
+
+  const isPro=DB.usage.isPro;
+  document.getElementById('freeBanner').classList.toggle('hidden',isPro||DB.usage.savedCount<3);
+
+  const limitReached=!isPro && DB.usage.savedCount>=3;
+  const btnSave=document.getElementById('btnSaveEstimate');
+  if(limitReached){btnSave.textContent='🔒 Лимит 3 сметы';btnSave.classList.add('secondary');btnSave.style.background='#f3f4f6';btnSave.style.color='#6b7280';}
+  else{btnSave.textContent='💾 Сохранить смету';btnSave.classList.remove('secondary');btnSave.style='';}
+
+  document.getElementById('signatureBlock').classList.toggle('locked',!isPro);
+  document.getElementById('btnPrint').classList.toggle('locked',!isPro);
+
+  document.getElementById('estimatesLocked').classList.toggle('hidden',isPro);
+  document.getElementById('estimatesUnlocked').classList.toggle('hidden',!isPro);
+  document.getElementById('crmLocked').classList.toggle('hidden',isPro);
+  document.getElementById('crmUnlocked').classList.toggle('hidden',!isPro);
+
+  // Статус в Профиле
+  const sp=document.getElementById('proStatusShort');
+  if(sp){
+    if(isPro&&DB.usage.proExpiry){
+      sp.innerHTML='✅ <span style="color:#059669;">PRO активен до '+new Date(DB.usage.proExpiry).toLocaleDateString('ru-RU')+'</span>';
+    }else{
+      sp.textContent='Бесплатная версия: 3 сметы. PRO снимает лимит и открывает CRM, PDF, подпись.';
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  ПОДПИСЬ КЛИЕНТА (canvas → dataURL в signatureData)
+// ═══════════════════════════════════════════════════════
+let _sigPad=null;
+function initSignaturePad(){
+  const canvas=document.getElementById('sigCanvas');
+  if(!canvas||_sigPad)return;
+  _sigPad={canvas,ctx:canvas.getContext('2d'),drawing:false,lastX:0,lastY:0};
+  function getPos(e){
+    const r=canvas.getBoundingClientRect();
+    const t=e.touches?e.touches[0]:e;
+    return{x:(t.clientX-r.left)*(canvas.width/r.width),y:(t.clientY-r.top)*(canvas.height/r.height)};
+  }
+  function start(e){e.preventDefault();_sigPad.drawing=true;const p=getPos(e);_sigPad.lastX=p.x;_sigPad.lastY=p.y;}
+  function move(e){if(!_sigPad.drawing)return;e.preventDefault();const p=getPos(e);_sigPad.ctx.beginPath();_sigPad.ctx.moveTo(_sigPad.lastX,_sigPad.lastY);_sigPad.ctx.lineTo(p.x,p.y);_sigPad.ctx.stroke();_sigPad.lastX=p.x;_sigPad.lastY=p.y;}
+  function end(){_sigPad.drawing=false;}
+  _sigPad.ctx.lineWidth=2.5;_sigPad.ctx.lineCap='round';_sigPad.ctx.strokeStyle='#1f2937';
+  canvas.addEventListener('mousedown',start);
+  canvas.addEventListener('mousemove',move);
+  canvas.addEventListener('mouseup',end);
+  canvas.addEventListener('mouseleave',end);
+  canvas.addEventListener('touchstart',start,{passive:false});
+  canvas.addEventListener('touchmove',move,{passive:false});
+  canvas.addEventListener('touchend',end);
+}
+function saveSig(){
+  if(!_sigPad)return;
+  // Проверяем, есть ли вообще рисунок
+  const data=_sigPad.canvas.toDataURL('image/png');
+  // пустой canvas даёт data:image/png;base64,iVBORw0KGgo... (одинаковый для всех пустых)
+  if(data.length<5000){alert('Поставьте подпись, пожалуйста');return;}
+  signatureData=data; // dataURL — будет перенесён в IDB при saveEstimate
+  alert('✓ Подпись сохранена (будет прикреплена к смете при сохранении)');
+}
+function clearSig(){
+  if(!_sigPad)return;
+  _sigPad.ctx.clearRect(0,0,_sigPad.canvas.width,_sigPad.canvas.height);
+  signatureData=null;
+}
+
+function renderCalc(){
+  currentProfile=document.getElementById('profileSelect')?.value||currentProfile;
+  const p=getProfile(currentProfile);
+  if(!p)return;
+  renderTemplates();
+  const cont=document.getElementById('worksList');
+  cont.innerHTML='';
+  if(!p.works||p.works.length===0){cont.innerHTML='<p class="small">Нет работ. Добавьте в профиль.</p>';}
+  p.works.forEach((w,i)=>{
+    const qty=currentState[w.name]||0;
+    const div=document.createElement('div');div.className='work-row';
+    div.innerHTML=
+      '<input type="checkbox" '+(qty>0?'checked':'')+' onchange="toggleWork(\''+w.name.replace(/'/g,"\\'")+'\',this.checked)">'+
+      '<div class="title">'+w.name+' <span class="price">('+w.price+' ₽/'+w.unit+')</span></div>'+
+      '<input type="number" class="qty" value="'+qty+'" min="0" onchange="setWorkQty(\''+w.name.replace(/'/g,"\\'")+'\',this.value)">'+
+      '<div style="flex:0 0 60px;text-align:right" class="small" id="sum-'+i+'">'+(qty*w.price)+' ₽</div>';
+    cont.appendChild(div);
+  });
+  renderMaterials();
+  renderObjectPhotos();
+  renderReceiptPhotos();
+  calcTotals();
+}
+
+function toggleWork(name,checked){if(checked){currentState[name]=(currentState[name]||0)||1;}else{currentState[name]=0;}renderCalc();}
+function setWorkQty(name,val){const v=parseFloat(val)||0;currentState[name]=v;renderCalc();}
+
+function renderMaterials(){
+  const cont=document.getElementById('materialsList');
+  cont.innerHTML='';
+  if(DB.mats.length===0){cont.innerHTML='<p class="small">Нет материалов. Добавьте вручную.</p>';return;}
+  let html='<table><thead><tr><th>Материал</th><th>Цена</th><th>Кол-во</th><th></th></tr></thead><tbody>';
+  DB.mats.forEach((m,i)=>{
+    const qty=currentState['_mat_'+i]||0;
+    html+='<tr><td>'+m.name+' ('+m.unit+')</td><td class="num">'+m.price+' ₽</td>'+
+          '<td><input type="number" value="'+qty+'" style="width:70px" onchange="setMatQty('+i+',this.value)"></td>'+
+          '<td><button class="secondary" style="width:auto;padding:4px 8px;font-size:12px;margin-top:0" onclick="removeMat('+i+')">🗑</button></td></tr>';
+  });
+  html+='</tbody></table>';
+  cont.innerHTML=html;
+}
+function setMatQty(i,val){currentState['_mat_'+i]=parseFloat(val)||0;calcTotals();}
+function addMaterial(){
+  const n=document.getElementById('addMatName').value.trim();
+  const p=parseFloat(document.getElementById('addMatPrice').value)||0;
+  const u=document.getElementById('addMatUnit').value.trim()||'шт';
+  if(n&&p){DB.mats.push({name:n,price:p,unit:u});saveDB();document.getElementById('addMatName').value='';document.getElementById('addMatPrice').value='';renderMaterials();calcTotals();}
+}
+function removeMat(i){DB.mats.splice(i,1);saveDB();renderMaterials();calcTotals();}
+
+// ═══════════════════════════════════════════════════════
+//  ФОТО
+// ═══════════════════════════════════════════════════════
+
+async function handlePhotoUpload(input,type){
+  const files=input.files;if(!files.length)return;
+  const target=type==='object'?objectPhotos:receiptPhotos;
+  // Ключи для черновика — draft:object:N (числовой индекс)
+  const draftId='draft';
+  let processed=0;
+  for(const file of Array.from(files)){
+    try{
+      const dataURL=await new Promise((res,rej)=>{
+        const r=new FileReader();
+        r.onload=e=>res(e.target.result);
+        r.onerror=()=>rej(new Error('read'));
+        r.readAsDataURL(file);
+      });
+      // Сжатие: длинная сторона 1280px, JPEG 0.75
+      const blob=await new Promise((res,rej)=>{
+        const img=new Image();
+        img.onload=()=>{
+          const canvas=document.createElement('canvas');
+          const MAX=1280;
+          let w=img.width,h=img.height;
+          if(w>h&&w>MAX){h=Math.round(h*(MAX/w));w=MAX;}
+          else if(h>MAX){w=Math.round(w*(MAX/h));h=MAX;}
+          canvas.width=w;canvas.height=h;
+          canvas.getContext('2d').drawImage(img,0,0,w,h);
+          canvas.toBlob(b=>b?res(b):rej(new Error('toBlob')),'image/jpeg',0.75);
+        };
+        img.onerror=()=>rej(new Error('decode'));
+        img.src=dataURL;
+      });
+      const key=`${draftId}:${type}:${target.length}`;
+      await idbPut('photos',key,blob);
+      target.push(key);
+      processed++;
+      if(processed===files.length){
+        if(type==='object')renderObjectPhotos();else renderReceiptPhotos();
+      }
+    }catch(err){
+      console.warn('photo upload failed',err);
+      alert('Не удалось сохранить фото «'+file.name+'»: '+(err.message||err));
+    }
+  }
+  input.value='';
+}
+async function renderPhotoGrid(gridId,keys,type,onRemove){
+  const grid=document.getElementById(gridId);
+  if(!grid)return;
+  if(!keys.length){grid.innerHTML='';return;}
+  // Сначала плейсхолдеры, потом подменяем на objectURL
+  grid.innerHTML=keys.map((k,i)=>`<div class="photo-item" data-k="${k||''}" data-i="${i}"><div class="ph">…</div><button class="del" data-i="${i}">×</button></div>`).join('');
+  // Кнопки удаления
+  grid.querySelectorAll('button.del').forEach(btn=>{
+    btn.onclick=()=>onRemove(parseInt(btn.dataset.i,10));
+  });
+  // Параллельно подгружаем URL
+  await Promise.all(keys.map(async(k,i)=>{
+    const item=grid.querySelector(`.photo-item[data-i="${i}"]`);
+    if(!item||!k)return;
+    const url=await getPhotoURL('photos',k);
+    if(url){
+      const ph=item.querySelector('.ph');
+      if(ph)ph.outerHTML=`<img src="${url}">`;
+    }else{
+      const ph=item.querySelector('.ph');
+      if(ph)ph.outerHTML=`<div class="ph" style="color:#ef4444;">нет фото</div>`;
+    }
+  }));
+}
+function renderObjectPhotos(){document.getElementById('objPhotoCount').textContent=objectPhotos.length;renderPhotoGrid('objectPhotosGrid',objectPhotos,'object',i=>removePhoto('object',i));}
+function renderReceiptPhotos(){document.getElementById('recPhotoCount').textContent=receiptPhotos.length;renderPhotoGrid('receiptPhotosGrid',receiptPhotos,'receipt',i=>removePhoto('receipt',i));}
+async function removePhoto(type,i){
+  const arr=type==='object'?objectPhotos:receiptPhotos;
+  const k=arr[i];
+  if(k&&k.includes(':')){
+    try{await idbDelete('photos',k);}catch(e){}
+    releasePhotoURL(k);
+  }
+  arr.splice(i,1);
+  if(type==='object')renderObjectPhotos();else renderReceiptPhotos();
+}
+
+// ═══════════════════════════════════════════════════════
+//  ИТОГИ
+// ═══════════════════════════════════════════════════════
+
+function calcTotals(){
+  const p=getProfile(currentProfile);let workSum=0,matSum=0;
+  if(p&&p.works)p.works.forEach(w=>{const q=currentState[w.name]||0;workSum+=q*w.price;});
+  DB.mats.forEach((m,i)=>{const q=currentState['_mat_'+i]||0;matSum+=q*m.price;});
+  document.getElementById('worksTotal').textContent='Итого работы: '+workSum.toLocaleString('ru-RU')+' ₽';
+  document.getElementById('materialsTotal').textContent='Итого материалы: '+matSum.toLocaleString('ru-RU')+' ₽';
+  const sub=workSum+matSum;
+  const disc=parseFloat(document.getElementById('discount').value)||0;
+  const markup=parseFloat(document.getElementById('markup').value)||0;
+  let afterDisc=sub*(1-disc/100);
+  let final=afterDisc*(1+markup/100);
+  document.getElementById('finalResult').textContent=Math.round(final).toLocaleString('ru-RU')+' ₽';
+  const br=document.getElementById('finalBreakdown');
+  br.innerHTML='Работы: '+workSum.toLocaleString('ru-RU')+' ₽ | Материалы: '+matSum.toLocaleString('ru-RU')+' ₽'+(disc>0?'<br>Скидка '+disc+'%: −'+(sub-afterDisc).toFixed(0)+' ₽':'')+(markup>0?'<br>Наценка '+markup+'%: +'+(final-afterDisc).toFixed(0)+' ₽':'');
+}
+
+// ═══════════════════════════════════════════════════════
+//  СОХРАНЕНИЕ СМЕТЫ
+// ═══════════════════════════════════════════════════════
+
+async function saveEstimate(){
+  const isPro=DB.usage.isPro;
+  if(!isPro&&DB.usage.savedCount>=3){
+    alert('Бесплатная версия позволяет сохранить 3 сметы. Обновитесь до PRO.');
+    switchTab('estimates');return;
+  }
+  const p=getProfile(currentProfile);
+  if(!p)return;
+  const client=document.getElementById('clientName').value.trim()||'Клиент';
+  const notes=document.getElementById('estimateNotes').value;
+  const works=[];p.works.forEach(w=>{const q=currentState[w.name]||0;if(q>0)works.push({name:w.name,qty:q,unit:w.unit,price:w.price,sum:q*w.price});});
+  const mats=[];DB.mats.forEach((m,i)=>{const q=currentState['_mat_'+i]||0;if(q>0)mats.push({name:m.name,qty:q,unit:m.unit,price:m.price,sum:q*m.price});});
+  if(works.length===0&&mats.length===0&&objectPhotos.length===0){alert('Смета пуста.');return;}
+  const estId='est_'+Date.now();
+  // Перенос фото из черновика (draft:*) в постоянное хранилище (estId:*)
+  const finalObject=[];
+  for(let i=0;i<objectPhotos.length;i++){
+    const oldKey=objectPhotos[i];
+    if(!oldKey||!oldKey.startsWith('draft:')){finalObject.push(oldKey);continue;}
+    const newKey=`${estId}:object:${i}`;
+    const blob=await idbGet('photos',oldKey);
+    if(blob){
+      await idbPut('photos',newKey,blob);
+      await idbDelete('photos',oldKey);
+      releasePhotoURL(oldKey);
+      finalObject.push(newKey);
+    }else{finalObject.push(null);}
+  }
+  const finalReceipt=[];
+  for(let i=0;i<receiptPhotos.length;i++){
+    const oldKey=receiptPhotos[i];
+    if(!oldKey||!oldKey.startsWith('draft:')){finalReceipt.push(oldKey);continue;}
+    const newKey=`${estId}:receipt:${i}`;
+    const blob=await idbGet('photos',oldKey);
+    if(blob){
+      await idbPut('photos',newKey,blob);
+      await idbDelete('photos',oldKey);
+      releasePhotoURL(oldKey);
+      finalReceipt.push(newKey);
+    }else{finalReceipt.push(null);}
+  }
+  // Подпись
+  let sigKey='';
+  if(signatureData&&signatureData.startsWith('data:')){
+    sigKey=estId;
+    await idbPut('signatures',sigKey,dataURLtoBlob(signatureData));
+  }else if(signatureData){sigKey=signatureData;} // уже ключ
+  const est={
+    id:estId,client,profileName:p.name,date:new Date().toISOString(),works,mats,
+    discount:document.getElementById('discount').value,markup:document.getElementById('markup').value,
+    total:document.getElementById('finalResult').textContent,notes,
+    agreedDate:document.getElementById('agreedDate')?.value||'',
+    agreedTime:document.getElementById('agreedTime')?.value||'',
+    objectPhotos:finalObject,receiptPhotos:finalReceipt,
+    signature:sigKey,
+    status:'new',paid:false,totalNum:Math.round(parseFloat(document.getElementById('finalResult').textContent.replace(/\s/g,'').replace('₽',''))||0)
+  };
+  DB.estimates.unshift(est);DB.usage.savedCount++;saveDB();
+  // Очищаем черновик в памяти
+  objectPhotos=[];receiptPhotos=[];signatureData=null;
+  document.getElementById('objPhotoCount').textContent='0';
+  document.getElementById('recPhotoCount').textContent='0';
+  const sigCanvas=document.getElementById('signatureCanvas');if(sigCanvas){const ctx=sigCanvas.getContext('2d');ctx&&ctx.clearRect(0,0,sigCanvas.width,sigCanvas.height);}
+  document.getElementById('objectPhotosGrid').innerHTML='';
+  document.getElementById('receiptPhotosGrid').innerHTML='';
+  alert('Сохранено! Осталось бесплатных смет: '+(isPro?'∞':Math.max(0,3-DB.usage.savedCount)));
+  updateUIState();
+}
+
+function renderEstimates(){
+  const cont=document.getElementById('estimatesList');
+  if(DB.estimates.length===0){cont.innerHTML='<p class="small">Нет смет. Создайте первую.</p>';return;}
+  let html='';
+  DB.estimates.forEach(e=>{
+    const d=new Date(e.date).toLocaleString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+    const photoInfo=(e.objectPhotos?.length||0)+(e.receiptPhotos?.length||0)>0 ? ' <span class="badge">📷 '+(e.objectPhotos?.length||0+e.receiptPhotos?.length||0)+'</span>' : '';
+    const timeInfo=e.agreedDate ? ' <span class="chip warn">📅 ' + e.agreedDate + (e.agreedTime ? ' ' + e.agreedTime : '') + '</span>' : '';
+    html+='<div class="estimate-item">'+
+      '<div class="top"><span class="client">'+e.client+'</span> <span class="chip accent">'+e.profileName+'</span>'+photoInfo+timeInfo+'</div>'+
+      '<div class="date">'+d+' → '+e.total+'</div>'+
+      '<div style="margin-top:6px;"><button class="secondary" style="width:auto;padding:5px 10px;font-size:12px;margin-top:0;display:inline-block" onclick="loadEstimate('+e.id+')">📂 Открыть</button> <button class="danger" style="width:auto;padding:5px 10px;font-size:12px;margin-top:0;display:inline-block" onclick="deleteEstimate('+e.id+')">🗑</button></div>'+
+    '</div>';
+  });
+  cont.innerHTML=html;
+}
+
+async function loadEstimate(id){
+  const e=DB.estimates.find(x=>x.id===id);if(!e)return;
+  document.getElementById('clientName').value=e.client||'';
+  document.getElementById('estimateNotes').value=e.notes||'';
+  if(document.getElementById('agreedDate'))document.getElementById('agreedDate').value=e.agreedDate||'';
+  if(document.getElementById('agreedTime'))document.getElementById('agreedTime').value=e.agreedTime||'';
+  currentProfile=DB.profiles.find(p=>p.name===e.profileName)?.id || currentProfile;
+  populateProfiles();if(document.getElementById('profileSelect'))document.getElementById('profileSelect').value=currentProfile;
+  currentState={};e.works.forEach(w=>currentState[w.name]=w.qty);
+  e.mats.forEach(m=>{const idx=DB.mats.findIndex(x=>x.name===m.name);if(idx>-1)currentState['_mat_'+idx]=m.qty;});
+  if(document.getElementById('discount'))document.getElementById('discount').value=e.discount||0;
+  if(document.getElementById('markup'))document.getElementById('markup').value=e.markup||0;
+  objectPhotos=Array.isArray(e.objectPhotos)?e.objectPhotos.slice():[];
+  receiptPhotos=Array.isArray(e.receiptPhotos)?e.receiptPhotos.slice():[];
+  // Подпись
+  if(e.signature){
+    const blob=await idbGet('signatures',e.signature);
+    if(blob){
+      const url=URL.createObjectURL(blob);
+      signatureData=e.signature; // храним ключ, не dataURL
+      // рисуем в canvas
+      const c=document.getElementById('sigCanvas');
+      if(c){const ctx=c.getContext('2d');const img=new Image();img.onload=()=>{ctx.drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);};img.src=url;}
+    }else{signatureData=null;}
+  }else{signatureData=null;}
+  renderCalc();switchTab('calc');
+}
+async function deleteEstimate(id){
+  if(!confirm('Удалить смету и все её фото?'))return;
+  const e=DB.estimates.find(x=>x.id===id);
+  if(e){
+    if(Array.isArray(e.objectPhotos)){for(const k of e.objectPhotos){if(k)await idbDelete('photos',k).catch(()=>{});}}
+    if(Array.isArray(e.receiptPhotos)){for(const k of e.receiptPhotos){if(k)await idbDelete('photos',k).catch(()=>{});}}
+    if(e.signature){await idbDelete('signatures',e.signature).catch(()=>{});}
+  }
+  DB.estimates=DB.estimates.filter(x=>x.id!==id);saveDB();renderEstimates();
+}
+
+// ═══════════════════════════════════════════════════════
+//  CRM: КЛИЕНТЫ, ВОРОНКА, ОПЛАТА
+// ═══════════════════════════════════════════════════════
+let crmFilter='all';
+function setCrmFilter(f){crmFilter=f;renderCRM();}
+
+function getStatusClass(s){
+  const map={new:'status-new',active:'status-active',done:'status-done',archive:'status-archive'};
+  return map[s]||'status-select';
+}
+
+function updateEstimateStatus(id,newStatus){
+  const e=DB.estimates.find(x=>x.id===id);if(!e)return;
+  e.status=newStatus;saveDB();renderCRM();renderEstimates();
+}
+function toggleEstimatePaid(id){
+  const e=DB.estimates.find(x=>x.id===id);if(!e)return;
+  e.paid=!e.paid;saveDB();renderCRM();renderEstimates();
+}
+
+function renderCRM(){
+  const cont=document.getElementById('crmList');
+  if(!cont)return;
+  if(DB.estimates.length===0){cont.innerHTML='<p class="small">Нет клиентов. Создайте смету — клиент появится здесь.</p>';updateCrmCounters();return;}
+  let list=DB.estimates.slice();
+  if(crmFilter!=='all'){
+    if(crmFilter==='unpaid')list=list.filter(e=>!e.paid);
+    else list=list.filter(e=>e.status===crmFilter);
+  }
+  ['all','new','active','done','archive','unpaid'].forEach(f=>{
+    const btn=document.getElementById('crmFilter'+f.charAt(0).toUpperCase()+f.slice(1));
+    if(btn) btn.classList.toggle('active',crmFilter===f);
+  });
+  if(list.length===0){cont.innerHTML='<p class="small">Нет клиентов в этом фильтре.</p>';updateCrmCounters();return;}
+
+  const cols={new:[],active:[],done:[],archive:[]};
+  list.forEach(e=>{
+    const s=['new','active','done','archive'].includes(e.status)?e.status:'new';
+    cols[s].push(e);
+  });
+
+  const colTitles={new:'🆕 Новые',active:'🟠 В работе',done:'🟢 Готово',archive:'🔴 Архив'};
+  const colColors={new:'#eff6ff',active:'#fffbeb',done:'#ecfdf5',archive:'#fef2f2'};
+
+  let html='<div class="crm-funnel">';
+  for(const s of ['new','active','done','archive']){
+    html+='<div class="funnel-col" style="background:'+colColors[s]+'">';
+    html+='<h4>'+colTitles[s]+' ('+cols[s].length+')</h4>';
+    if(cols[s].length===0) html+='<p class="kanban-hint">—</p>';
+    else{
+      cols[s].forEach(e=>{
+        const d=new Date(e.date).toLocaleDateString('ru-RU',{day:'numeric',month:'short'});
+        const paidBtn=e.paid?
+          '<button class="paid-yes" onclick="toggleEstimatePaid('+e.id+')">✅ Опл.</button>':
+          '<button class="paid-no" onclick="toggleEstimatePaid('+e.id+')">❌ Нет</button>';
+        html+='<div class="funnel-card">'+
+          '<div class="top"><b>'+e.client+'</b> <span class="amt">'+e.total+'</span></div>'+
+          '<div class="date">'+d+' · '+e.profileName+'</div>'+
+          '<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;">'+paidBtn+
+          '<select class="status-select '+getStatusClass(e.status)+'" onchange="updateEstimateStatus('+e.id+',this.value)">'+
+          '<option value="new" '+(e.status==='new'?'selected':'')+'>🆕 Новый</option>'+
+          '<option value="active" '+(e.status==='active'?'selected':'')+'>🟠 В работе</option>'+
+          '<option value="done" '+(e.status==='done'?'selected':'')+'>🟢 Готово</option>'+
+          '<option value="archive" '+(e.status==='archive'?'selected':'')+'>🔴 Архив</option>'+
+          '</select>'+
+          '<button class="secondary" style="font-size:12px;" onclick="loadEstimate('+e.id+')">📂</button>'+
+          '<button class="danger" style="font-size:12px;" onclick="deleteEstimate('+e.id+')">🗑</button>'+
+          '</div></div>';
+      });
+    }
+    html+='</div>';
+  }
+  html+='</div>';
+  cont.innerHTML=html;
+  updateCrmCounters();
+}
+
+function updateCrmCounters(){
+  const total=DB.estimates.length;
+  const newC=DB.estimates.filter(e=>e.status==='new').length;
+  const act=DB.estimates.filter(e=>e.status==='active').length;
+  const done=DB.estimates.filter(e=>e.status==='done').length;
+  const rev=DB.estimates.filter(e=>e.paid).reduce((s,e)=>s+(e.totalNum||0),0);
+  const elTotal=document.getElementById('crmStatTotal');
+  const elNew=document.getElementById('crmStatNew');
+  const elAct=document.getElementById('crmStatActive');
+  const elDone=document.getElementById('crmStatDone');
+  const elRev=document.getElementById('crmStatRevenue');
+  if(elTotal) elTotal.textContent=total;
+  if(elNew) elNew.textContent=newC;
+  if(elAct) elAct.textContent=act;
+  if(elDone) elDone.textContent=done;
+  if(elRev) elRev.textContent=rev.toLocaleString('ru-RU')+' ₽';
+}
+
+// ═══════════════════════════════════════════════════════
+//  ПЕЧАТЬ / ПОДЕЛИТЬСЯ
+// ═══════════════════════════════════════════════════════
+
+// === Загрузка jsPDF (CDN) с кешированием в localStorage ===
+let _jspdfPromise=null;
+function loadJsPDF(){
+  if(_jspdfPromise)return _jspdfPromise;
+  _jspdfPromise=new Promise((resolve,reject)=>{
+    if(window.jspdf&&window.jspdf.jsPDF)return resolve(window.jspdf.jsPDF);
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    s.onload=()=>{window.jspdf&&window.jspdf.jsPDF?resolve(window.jspdf.jsPDF):reject(new Error('jsPDF не загрузился'));};
+    s.onerror=()=>reject(new Error('CDN недоступен (нужен интернет для PDF)'));
+    document.head.appendChild(s);
+  });
+  return _jspdfPromise;
+}
+
+async function printEstimate(){
+  if(!DB.usage.isPro){alert('PDF и печать доступны в PRO (490 ₽)');return;}
+  const client=document.getElementById('clientName').value.trim()||'Клиент';
+  const notes=document.getElementById('estimateNotes').value;
+  const p=getProfile(currentProfile);
+  if(!p)return;
+  // Сбор данных
+  let wSum=0,mSum=0;
+  const works=[];p.works.forEach(w=>{const q=currentState[w.name]||0;if(q>0){const s=q*w.price;works.push({...w,qty:q,sum:s});wSum+=s;}});
+  const mats=[];DB.mats.forEach((m,i)=>{const q=currentState['_mat_'+i]||0;if(q>0){const s=q*m.price;mats.push({...m,qty:q,sum:s});mSum+=s;}});
+  const disc=parseFloat(document.getElementById('discount').value)||0;
+  const markup=parseFloat(document.getElementById('markup').value)||0;
+  const total=Math.round((wSum+mSum)*(1-disc/100)*(1+markup/100));
+
+  // Попытка jsPDF (только если есть интернет)
+  let pdfOk=false;
+  try{
+    const JsPDF=await Promise.race([loadJsPDF(),new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),3000))]);
+    const doc=new JsPDF({unit:'mm',format:'a4'});
+    // Шапка
+    doc.setFontSize(18);doc.setFont('helvetica','bold');
+    doc.text(`SMETA — ${client}`,15,18);
+    doc.setFontSize(10);doc.setFont('helvetica','normal');
+    doc.text(`Profile: ${p.name}`,15,25);
+    if(notes)doc.text(`Notes: ${notes.slice(0,200)}`,15,30);
+    doc.text(`Date: ${new Date().toLocaleDateString('ru-RU')}`,15,35);
+    // Таблица работ
+    let y=45;
+    doc.setFontSize(12);doc.setFont('helvetica','bold');doc.text('WORKS',15,y);y+=6;
+    doc.setFontSize(9);doc.setFont('helvetica','normal');
+    doc.text('#',15,y);doc.text('Name',22,y);doc.text('Qty',120,y);doc.text('Unit',135,y);doc.text('Price',150,y);doc.text('Sum',175,y);y+=5;
+    works.forEach((w,i)=>{doc.text(String(i+1),15,y);doc.text(w.name.slice(0,45),22,y);doc.text(String(w.qty),120,y);doc.text(w.unit,135,y);doc.text(String(w.price),150,y);doc.text(String(w.sum),175,y);y+=5;if(y>270){doc.addPage();y=20;}});
+    y+=3;doc.setFont('helvetica','bold');doc.text(`Total works: ${wSum} RUB`,15,y);y+=8;
+    if(mats.length){doc.setFontSize(12);doc.text('MATERIALS',15,y);y+=6;doc.setFontSize(9);doc.setFont('helvetica','normal');mats.forEach((m,i)=>{doc.text(String(i+1),15,y);doc.text(m.name.slice(0,45),22,y);doc.text(String(m.qty),120,y);doc.text(m.unit,135,y);doc.text(String(m.price),150,y);doc.text(String(m.sum),175,y);y+=5;if(y>270){doc.addPage();y=20;}});y+=3;doc.setFont('helvetica','bold');doc.text(`Total materials: ${mSum} RUB`,15,y);y+=8;}
+    if(disc||markup){doc.setFont('helvetica','normal');doc.text(`Discount: ${disc}%  Markup: ${markup}%`,15,y);y+=6;}
+    doc.setFontSize(14);doc.setFont('helvetica','bold');doc.text(`TOTAL: ${total.toLocaleString('ru-RU')} RUB`,15,y+5);
+    // Сохранение
+    const fname=`smeta-${client.replace(/[^\w]/g,'_')}-${new Date().toISOString().slice(0,10)}.pdf`;
+    doc.save(fname);
+    pdfOk=true;
+  }catch(err){
+    console.warn('jsPDF failed, fallback to print',err);
+  }
+  if(pdfOk)return;
+  // Fallback: HTML-окно с print
+  const w=window.open('','_blank');
+  if(!w){alert('Не удалось открыть окно для печати. Разрешите всплывающие окна.');return;}
+  let html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Смета — '+client+'</title><style>body{font-family:-apple-system,sans-serif;max-width:700px;margin:20px auto;padding:0 16px;color:#1f2937;}h1{color:#1e3a8a;border-bottom:2px solid #1e3a8a;padding-bottom:8px;}table{width:100%;border-collapse:collapse;margin:14px 0;}th,td{padding:8px;border-bottom:1px solid #e5e7eb;text-align:left;font-size:14px;}th{background:#f0f2f5;font-weight:600;}tfoot td{font-weight:700;font-size:16px;background:#fef3c7;}.total{background:#1e3a8a;color:#fff;padding:14px;border-radius:8px;text-align:center;font-size:20px;font-weight:700;margin:14px 0;}</style></head><body>';
+  html+='<h1>📋 Смета</h1>';
+  html+='<p><b>Клиент:</b> '+client+'<br><b>Профиль:</b> '+p.name+'<br><b>Дата:</b> '+new Date().toLocaleString('ru-RU')+'</p>';
+  if(notes)html+='<p><b>Примечания:</b><br>'+notes.replace(/\n/g,'<br>')+'</p>';
+  if(works.length){
+    html+='<h2>Работы</h2><table><thead><tr><th>№</th><th>Наименование</th><th>Кол-во</th><th>Ед.</th><th>Цена</th><th>Сумма</th></tr></thead><tbody>';
+    works.forEach((w,i)=>{html+=`<tr><td>${i+1}</td><td>${w.name}</td><td>${w.qty}</td><td>${w.unit}</td><td>${w.price} ₽</td><td>${w.sum} ₽</td></tr>`;});
+    html+=`</tbody><tfoot><tr><td colspan="5">Итого работы:</td><td>${wSum} ₽</td></tr></tfoot></table>`;
+  }
+  if(mats.length){
+    html+='<h2>Материалы</h2><table><thead><tr><th>№</th><th>Наименование</th><th>Кол-во</th><th>Ед.</th><th>Цена</th><th>Сумма</th></tr></thead><tbody>';
+    mats.forEach((m,i)=>{html+=`<tr><td>${i+1}</td><td>${m.name}</td><td>${m.qty}</td><td>${m.unit}</td><td>${m.price} ₽</td><td>${m.sum} ₽</td></tr>`;});
+    html+=`</tbody><tfoot><tr><td colspan="5">Итого материалы:</td><td>${mSum} ₽</td></tr></tfoot></table>`;
+  }
+  if(disc||markup)html+=`<p>Скидка: ${disc}% · Наценка: ${markup}%</p>`;
+  html+=`<div class="total">ИТОГО: ${total.toLocaleString('ru-RU')} ₽</div>`;
+  if(objectPhotos.length)html+=`<p>📷 Фото объекта: ${objectPhotos.length} шт. (в архиве сметы)</p>`;
+  if(receiptPhotos.length)html+=`<p>🧾 Чеки: ${receiptPhotos.length} шт. (в архиве сметы)</p>`;
+  html+='<p style="margin-top:30px;font-size:12px;color:#6b7280;">Смета сформирована Калькулятором смет PRO · '+new Date().toLocaleString('ru-RU')+'</p>';
+  html+='<scr'+'ipt>setTimeout(()=>window.print(),300);</scr'+'ipt>';
+  w.document.write(html);
+  w.document.close();
+}
+function shareEstimate(){
+  const client=document.getElementById('clientName').value.trim()||'Клиент';
+  const total=document.getElementById('finalResult').textContent;
+  const text='Смета для '+client+'. Профиль: '+getProfile(currentProfile).name+'. Итого: '+total;
+  if(navigator.share){navigator.share({title:'Смета',text:text});}
+  else{const a=document.createElement('a');a.href='https://t.me/share/url?url='+encodeURIComponent(location.href)+'&text='+encodeURIComponent(text);a.target='_blank';a.click();}
+}
+
+// ═══════════════════════════════════════════════════════
+//  ПРОФИЛИ (свои работы)
+// ═══════════════════════════════════════════════════════
+
+let editingProfileId=null;
+let profDraftWorks=[];   // черновик работ, пока мастер не нажал «💾 Сохранить профиль»
+let editingWorkIndex=-1; // индекс редактируемой работы в profDraftWorks, -1 = новая
+
+function renderProfWorksDraft(){
+  const box=document.getElementById('profWorksList');
+  if(!box)return;
+  const q=(document.getElementById('profWorksFilter')?.value||'').trim().toLowerCase();
+  const list=q?profDraftWorks.map((w,i)=>({w,i})).filter(x=>x.w.name.toLowerCase().includes(q)||x.w.unit.toLowerCase().includes(q)):profDraftWorks.map((w,i)=>({w,i}));
+  if(q&&list.length===0){
+    box.innerHTML='<div class="empty">Ничего не найдено по «'+q+'»</div>';
+    return;
+  }
+  box.innerHTML=list.map(({w,i})=>`
+    <div class="wd-item">
+      <span class="wd-name" onclick="editProfWork(${i})" style="cursor:pointer;">${w.name}</span>
+      <span class="wd-meta">${w.price} ₽ / ${w.unit}</span>
+      <button type="button" onclick="removeProfWork(${i})" title="Удалить">✕</button>
+    </div>
+  `).join('');
+}
+
+function onUnitChange(){
+  const v=document.getElementById('wmUnit').value;
+  document.getElementById('wmUnitCustom').style.display=(v==='__custom__')?'block':'none';
+}
+function openWorkModal(){
+  editingWorkIndex=-1;
+  document.getElementById('workModalTitle').textContent='➕ Новая работа';
+  document.getElementById('wmName').value='';
+  document.getElementById('wmPrice').value='';
+  document.getElementById('wmUnit').value='шт';
+  document.getElementById('wmUnitCustom').value='';
+  document.getElementById('wmUnitCustom').style.display='none';
+  document.getElementById('workModal').style.display='flex';
+  setTimeout(()=>document.getElementById('wmName').focus(),50);
+}
+function closeWorkModal(){document.getElementById('workModal').style.display='none';}
+function saveWorkFromModal(){
+  const name=document.getElementById('wmName').value.trim();
+  const price=parseFloat(document.getElementById('wmPrice').value)||0;
+  let unit=document.getElementById('wmUnit').value;
+  if(unit==='__custom__'){
+    unit=document.getElementById('wmUnitCustom').value.trim();
+    if(!unit){alert('Введите свою единицу измерения');return;}
+  }
+  if(!name){alert('Введите название работы');return;}
+  const item={name,price,unit};
+  if(editingWorkIndex>=0){profDraftWorks[editingWorkIndex]=item;}
+  else{profDraftWorks.push(item);}
+  closeWorkModal();
+  renderProfWorksDraft();
+}
+function editProfWork(i){
+  editingWorkIndex=i;
+  const w=profDraftWorks[i];
+  document.getElementById('workModalTitle').textContent='✏️ Изменить работу';
+  document.getElementById('wmName').value=w.name;
+  document.getElementById('wmPrice').value=w.price;
+  // если единицы нет среди стандартных — показываем своё поле
+  const sel=document.getElementById('wmUnit');
+  const opts=Array.from(sel.options).map(o=>o.value);
+  if(opts.includes(w.unit)){sel.value=w.unit;document.getElementById('wmUnitCustom').style.display='none';}
+  else{sel.value='__custom__';document.getElementById('wmUnitCustom').value=w.unit;document.getElementById('wmUnitCustom').style.display='block';}
+  document.getElementById('workModal').style.display='flex';
+}
+function removeProfWork(i){
+  if(!confirm('Удалить работу «'+profDraftWorks[i].name+'»?'))return;
+  profDraftWorks.splice(i,1);
+  renderProfWorksDraft();
+}
+
+function openEditProfile(){
+  editingProfileId=currentProfile;
+  const p=getProfile(currentProfile);
+  if(!p)return;
+  document.getElementById('profName').value=p.name;
+  profDraftWorks=(p.works||[]).map(w=>({name:w.name,price:w.price,unit:w.unit||'шт'}));
+  renderProfWorksDraft();
+  switchTab('profile');
+}
+function openNewProfile(){
+  editingProfileId=null;
+  document.getElementById('profName').value='';
+  profDraftWorks=[];
+  renderProfWorksDraft();
+  switchTab('profile');
+}
+function saveProfile(){
+  const name=document.getElementById('profName').value.trim();
+  if(!name){alert('Введите название профиля');return;}
+  const works=profDraftWorks.map(w=>({name:w.name,price:w.price,unit:w.unit}));
+  if(editingProfileId){
+    const idx=DB.profiles.findIndex(x=>x.id===editingProfileId);
+    if(idx>-1){DB.profiles[idx].name=name;DB.profiles[idx].works=works;}
+  }else{
+    const id='p'+Date.now();
+    DB.profiles.push({id,name,works});
+    currentProfile=id;
+  }
+  saveDB();populateProfiles();renderCalc();updateUIState();switchTab('calc');
+}
+function deleteProfile(){if(!editingProfileId)return;if(!confirm('Удалить профиль?'))return;DB.profiles=DB.profiles.filter(p=>p.id!==editingProfileId);if(DB.profiles.length===0){DB.profiles=[];}currentProfile=DB.profiles[0]?.id||'';saveDB();populateProfiles();updateUIState();renderCalc();switchTab('calc');}
+
+function importProfileCSV(input){
+  const file=input.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=function(e){
+    const lines=e.target.result.split(/\r?\n/).filter(l=>l.trim());
+    if(lines.length===0)return;
+    let works=[];
+    lines.forEach((line,idx)=>{
+      if(idx===0&&/название|наименование|работа/i.test(line))return;
+      const p=line.split(';');if(p.length<2)return;
+      const price=parseFloat(p[1])||0;const unit=(p[2]||'шт').trim();
+      works.push({name:p[0].trim(),price,unit});
+    });
+    if(works.length>0){
+      const id='p'+Date.now();
+      DB.profiles.push({id,name:"📁 Профиль от "+new Date().toLocaleDateString('ru-RU'),works});
+      currentProfile=id;saveDB();populateProfiles();updateUIState();renderCalc();switchTab('calc');
+      alert('Загружено '+works.length+' работ');
+    }
+  };
+  r.readAsText(file,'utf-8');
+}
+function handleDrop(e){e.preventDefault();e.target.classList.remove('dragover');const files=e.dataTransfer.files;if(files.length)importProfileCSV({files:files});}
+
+async function exportJSON(){
+  // Собираем «голую» БД (только метаданные)
+  const meta=JSON.parse(JSON.stringify(DB));
+  // Спрашиваем: с фото или без?
+  const withPhotos=confirm('Включить фото в бэкап?\n\nОК — с фото (большой файл, 1-50 МБ)\nОтмена — только текст (быстро, ~50 КБ)');
+  if(withPhotos){
+    if(!confirm('Это может занять 10-60 секунд. Точно продолжить?'))return;
+    showToast('Собираю фото из IndexedDB…');
+    for(const e of (meta.estimates||[])){
+      if(Array.isArray(e.objectPhotos)){
+        const arr=[];
+        for(const k of e.objectPhotos){if(!k)continue;const blob=await idbGet('photos',k);if(blob)arr.push(await blobToDataURL(blob));}
+        e.objectPhotos=arr;
+      }
+      if(Array.isArray(e.receiptPhotos)){
+        const arr=[];
+        for(const k of e.receiptPhotos){if(!k)continue;const blob=await idbGet('photos',k);if(blob)arr.push(await blobToDataURL(blob));}
+        e.receiptPhotos=arr;
+      }
+      if(e.signature){
+        const blob=await idbGet('signatures',e.signature);
+        if(blob)e.signature=await blobToDataURL(blob);
+      }
+    }
+  }
+  const json=JSON.stringify({...meta,withPhotos,_exportedAt:Date.now()},null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='calc-pro-backup-'+(withPhotos?'photos-':'')+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+}
+function blobToDataURL(blob){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=e=>res(e.target.result);
+    r.onerror=rej;
+    r.readAsDataURL(blob);
+  });
+}
+async function importJSON(input){
+  const file=input.files[0];if(!file)return;
+  showToast('Читаю файл…');
+  const r=new FileReader();
+  r.onload=async function(e){
+    try{
+      const incoming=JSON.parse(e.target.result);
+      const est=incoming.estimates||[];
+      // Импортируем фото (если они в dataURL)
+      for(const estObj of est){
+        if(Array.isArray(estObj.objectPhotos)&&estObj.objectPhotos.length&&estObj.objectPhotos[0]?.startsWith?.('data:')){
+          const newKeys=[];
+          for(let i=0;i<estObj.objectPhotos.length;i++){
+            const d=estObj.objectPhotos[i];
+            if(!d||!d.startsWith?.('data:')){newKeys.push(d);continue;}
+            const k=`${estObj.id}:object:${i}`;
+            await idbPut('photos',k,dataURLtoBlob(d));
+            newKeys.push(k);
+          }
+          estObj.objectPhotos=newKeys;
+        }
+        if(Array.isArray(estObj.receiptPhotos)&&estObj.receiptPhotos.length&&estObj.receiptPhotos[0]?.startsWith?.('data:')){
+          const newKeys=[];
+          for(let i=0;i<estObj.receiptPhotos.length;i++){
+            const d=estObj.receiptPhotos[i];
+            if(!d||!d.startsWith?.('data:')){newKeys.push(d);continue;}
+            const k=`${estObj.id}:receipt:${i}`;
+            await idbPut('photos',k,dataURLtoBlob(d));
+            newKeys.push(k);
+          }
+          estObj.receiptPhotos=newKeys;
+        }
+        if(typeof estObj.signature==='string'&&estObj.signature.startsWith('data:')){
+          await idbPut('signatures',estObj.id,dataURLtoBlob(estObj.signature));
+          estObj.signature=estObj.id;
+        }
+      }
+      DB=incoming;saveDB();
+      alert('База загружена: '+DB.estimates.length+' смет, '+DB.profiles.length+' профилей');
+      renderCalc();renderEstimates();updateUIState();
+    }catch(err){alert('Ошибка JSON: '+err);}
+  };
+  r.readAsText(file);
+}
+
+// ═══════════════════════════════════════════════════════
+//  НАПОМИНАНИЯ ПО ДОГОВОРЁННОСТЯМ
+// ═══════════════════════════════════════════════════════
+
+function handleDateChange(){
+  const date=document.getElementById('agreedDate').value;
+  const time=document.getElementById('agreedTime').value;
+  const hint=document.getElementById('dateHint');
+  if(!date){hint.style.display='none';return;}
+  const now=new Date();now.setHours(0,0,0,0);
+  const sel=new Date(date);sel.setHours(0,0,0,0);
+  const diff=(sel-now)/(1000*60*60*24);
+  if(diff===0)hint.textContent='⏰ Сегодня в '+time+' — не забудьте!';
+  else if(diff===1)hint.textContent='⏰ Завтра в '+time+' — не забудьте!';
+  else if(diff===-1)hint.textContent='⚠️ Вчера! Просрочено!';
+  else if(diff<-1)hint.textContent='⚠️ Просрочено на '+Math.abs(diff)+' дн.!';
+  else hint.textContent='📅 Через '+diff+' дн. в '+time;
+  hint.style.display='block';
+}
+
+function getSoonAppointments(){
+  const now=new Date();now.setHours(0,0,0,0);
+  return DB.estimates.filter(e=>{
+    if(!e.agreedDate)return false;
+    const d=new Date(e.agreedDate);d.setHours(0,0,0,0);
+    const diff=(d-now)/(1000*60*60*24);
+    return diff>=0 && diff<=2;
+  }).sort((a,b)=>{
+    const da=new Date(a.agreedDate+'T'+(a.agreedTime||'00:00'));
+    const db=new Date(b.agreedDate+'T'+(b.agreedTime||'00:00'));
+    return da-db;
+  });
+}
+
+function showAppointmentReminder(){
+  const soon=getSoonAppointments();
+  if(soon.length===0)return;
+  let msg='📅 Ближайшие договорённости:\n\n';
+  soon.forEach((e,i)=>{
+    const d=new Date(e.agreedDate);const today=new Date();today.setHours(0,0,0,0);d.setHours(0,0,0,0);
+    const diff=(d-today)/(1000*60*60*24);
+    let when=diff===0?'СЕГОДНЯ':diff===1?'ЗАВТРА':'через '+diff+' дн.';
+    msg+=(i+1)+'. '+when+' '+e.agreedDate;
+    if(e.agreedTime)msg+=' '+e.agreedTime;
+    msg+=' — '+e.client+' ('+e.profileName+')\n';
+  });
+  // Показываем только если вкладка "Смета" активна
+  if(document.getElementById('sec-calc').classList.contains('active')){
+    // Проверяем, показывали ли уже сегодня
+    const lastCheck=localStorage.getItem('calc_reminder_shown');
+    const today=new Date().toDateString();
+    if(lastCheck!==today){
+      alert(msg);
+      localStorage.setItem('calc_reminder_shown',today);
+    }
+  }
+}
+
+function startReminderPoll(){
+  // Показать при загрузке
+  showAppointmentReminder();
+  // И каждый час перепроверять
+  setInterval(showAppointmentReminder,60*60*1000);
+}
+
+// ═══════════════════════════════════════════════════════
+//  DEMO / PRO АКТИВАЦИЯ
+// ═══════════════════════════════════════════════════════
+
+function unlockDemo(){
+  DB.usage.isPro=true;saveDB();updateUIState();renderCRM();alert('PRO активирован (тестовый режим на этом устройстве)');
+}
+
+// ═══════════════════════════════════════════════════════
+//  PRO-КЛЮЧ: валидация через Web Crypto API (HMAC-SHA256)
+//  Формат ключа: SMETA-XXX-XXXX-XXX-XXX (13 символов base32)
+//  Алгоритм: первые 4 байта — expiry (uint32 BE), последние 4 — HMAC-SHA256(SECRET, expiry)[:4]
+// ═══════════════════════════════════════════════════════
+const PRO_SECRET = (() => { const s = "smeta" + "-pro" + "-2026" + "-Anton" + "-v1"; const a = new Uint8Array(s.length); for (let i=0;i<s.length;i++) a[i]=s.charCodeAt(i); return a; })(); // ← ПОМЕНЯЙ В PRODUCTION: задай свой SECRET в pro_keys.py и здесь синхронно
+// В pro_keys.py: SECRET = ("smeta" + "-pro" + "-2026" + "-Anton" + "-v1").encode()
+
+const B32_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+
+function _b32encode(bytes){
+  let bits=0,value=0,out="";
+  for(const b of bytes){
+    value=(value<<8)|b;bits+=8;
+    while(bits>=5){out+=B32_ALPHABET[(value>>>(bits-5))&31];bits-=5;}
+  }
+  if(bits>0)out+=B32_ALPHABET[(value<<(5-bits))&31];
+  return out;
+}
+
+function _b32decode(s){
+  s=s.toUpperCase().replace(/[^A-Z2-7]/g,"");
+  let bits=0,value=0,out=[];
+  for(const c of s){
+    const v=B32_ALPHABET.indexOf(c);
+    if(v<0)throw new Error("bad char");
+    value=(value<<5)|v;bits+=5;
+    if(bits>=8){out.push((value>>(bits-8))&255);bits-=8;}
+  }
+  return new Uint8Array(out);
+}
+
+async function _hmacSha256(keyBytes,msgBytes){
+  const key=await crypto.subtle.importKey("raw",keyBytes,{name:"HMAC",hash:"SHA-256"},false,["sign"]);
+  const sig=await crypto.subtle.sign("HMAC",key,msgBytes);
+  return new Uint8Array(sig);
+}
+
+async function validateProKey(key){
+  if(typeof key!=="string")return{ok:false,reason:"неверный формат"};
+  key=key.trim().toUpperCase();
+  if(!key.startsWith("SMETA-"))return{ok:false,reason:"неверный формат (нужен SMETA-...)"};
+  const code=key.slice(6).replace(/-/g,"");
+  if(code.length!==13)return{ok:false,reason:`неверная длина (${code.length} симв., нужно 13)`};
+  let data;
+  try{data=_b32decode(code);}catch(e){return{ok:false,reason:"нечитаемые символы"};}
+  if(data.length!==8)return{ok:false,reason:"повреждённый ключ"};
+  const payload=data.slice(0,4),sig=data.slice(4);
+  const expected=(await _hmacSha256(PRO_SECRET,payload)).slice(0,4);
+  // constant-time compare
+  let diff=0;
+  for(let i=0;i<4;i++)diff|=sig[i]^expected[i];
+  if(diff!==0)return{ok:false,reason:"подпись не совпадает (ключ подделан)"};
+  const expiry=(payload[0]<<24)|(payload[1]<<16)|(payload[2]<<8)|payload[3];
+  const now=Math.floor(Date.now()/1000);
+  if(expiry<now)return{ok:false,reason:"ключ просрочен"};
+  return{ok:true,expiry:expiry*1000};
+}
+
+function openProKeyModal(){
+  const cur=DB.usage.isPro
+    ?`<div class="ok" style="padding:10px;border-radius:8px;background:#d1fae5;color:#065f46;text-align:center;">✓ PRO активен до ${new Date(DB.usage.proExpiry).toLocaleDateString("ru-RU")}</div>
+       <button class="danger" style="margin-top:10px" onclick="deactivatePro()">Деактивировать PRO</button>`
+    :`<p style="font-size:13px;color:var(--muted);margin:4px 0 10px;">Ключ выдаётся ботом после оплаты. Введите его в поле ниже:</p>
+       <input type="text" id="proKeyInput" placeholder="SMETA-XXX-XXXX-XXX-XXX" style="font-family:monospace;text-transform:uppercase;" autocomplete="off">
+       <button class="ok" style="margin-top:10px" onclick="submitProKey()">🔑 Активировать</button>
+       <p class="hint" style="margin-top:10px;">Нет ключа? Получите в Telegram-боте <a href="#" onclick="event.preventDefault();alert('Откройте @smetapro_bot в Telegram')">@smetapro_bot</a> или на странице <a href="#" onclick="event.preventDefault();switchTab('pro')">⭐ PRO</a>.</p>`;
+  document.getElementById("proModalBody").innerHTML=cur;
+  document.getElementById("proKeyModal").style.display="flex";
+}
+function closeProKeyModal(){document.getElementById("proKeyModal").style.display="none";}
+async function submitProKey(){
+  const v=document.getElementById("proKeyInput").value;
+  const r=await validateProKey(v);
+  if(r.ok){
+    DB.usage.isPro=true;
+    DB.usage.proExpiry=r.expiry;
+    saveDB();updateUIState();renderCRM();
+    closeProKeyModal();
+    alert(`✓ PRO активирован до ${new Date(r.expiry).toLocaleDateString("ru-RU")}`);
+  }else{
+    alert("✗ Ключ не принят: "+r.reason);
+  }
+}
+function deactivatePro(){
+  if(!confirm("Деактивировать PRO на этом устройстве?"))return;
+  DB.usage.isPro=false;delete DB.usage.proExpiry;saveDB();updateUIState();renderCRM();renderProPage();
+  closeProKeyModal();
+  alert("PRO деактивирован");
+}
+
+function renderProPage(){
+  const active=DB.usage.isPro&&(!DB.usage.proExpiry||DB.usage.proExpiry>Date.now());
+  document.getElementById("proPageActive").style.display=active?"block":"none";
+  document.getElementById("proPageInactive").style.display=active?"none":"block";
+  if(active&&DB.usage.proExpiry){
+    document.getElementById("proExpiryText").textContent=new Date(DB.usage.proExpiry).toLocaleDateString("ru-RU");
+  }
+  if(active&&DB.usage.proExpiry&&DB.usage.proExpiry<Date.now()){
+    // ключ истёк
+    DB.usage.isPro=false;saveDB();renderProPage();
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  СТАРТ
+// ═══════════════════════════════════════════════════════
+
+maybeCreateDemo();
+initSignaturePad();
+populateProfiles();
+updateUIState();
+renderCalc();
+startReminderPoll();
+
+// === Миграция: перенос фото из localStorage в IndexedDB (если есть старый формат) ===
+(async function migratePhotosToIDB(){
+  if(!DB.estimates||!DB.estimates.length)return;
+  let migrated=0;
+  for(const e of DB.estimates){
+    const eid=e.id;
+    if(!eid)continue;
+    // objectPhotos: data:image/... → ключ
+    if(Array.isArray(e.objectPhotos)&&e.objectPhotos.length&&e.objectPhotos[0]?.startsWith?.('data:')){
+      const newKeys=[];
+      for(let i=0;i<e.objectPhotos.length;i++){
+        const k=`${eid}:object:${i}`;
+        try{await idbPut('photos',k,dataURLtoBlob(e.objectPhotos[i]));newKeys.push(k);}catch(err){newKeys.push(null);}
+      }
+      e.objectPhotos=newKeys;migrated++;
+    }
+    // receiptPhotos
+    if(Array.isArray(e.receiptPhotos)&&e.receiptPhotos.length&&e.receiptPhotos[0]?.startsWith?.('data:')){
+      const newKeys=[];
+      for(let i=0;i<e.receiptPhotos.length;i++){
+        const k=`${eid}:receipt:${i}`;
+        try{await idbPut('photos',k,dataURLtoBlob(e.receiptPhotos[i]));newKeys.push(k);}catch(err){newKeys.push(null);}
+      }
+      e.receiptPhotos=newKeys;migrated++;
+    }
+    // signature
+    if(typeof e.signature==='string'&&e.signature.startsWith('data:')){
+      try{await idbPut('signatures',eid,dataURLtoBlob(e.signature));e.signature=eid;migrated++;}
+      catch(err){e.signature='';}
+    }
+  }
+  if(migrated>0){
+    saveDB();
+    console.log(`Мигрировано в IndexedDB: ${migrated} полей фото/подписей`);
+  }
+})();
+
+// === PWA: регистрация Service Worker ===
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js')
+      .then(reg=>{
+        // Проверка обновлений каждые 60 минут
+        setInterval(()=>reg.update(),60*60*1000);
+        reg.addEventListener('updatefound',()=>{
+          const nw=reg.installing;
+          if(!nw)return;
+          nw.addEventListener('statechange',()=>{
+            if(nw.state==='installed'&&navigator.serviceWorker.controller){
+              showToast('Доступна новая версия. Обновите страницу.');
+            }
+          });
+        });
+      })
+      .catch(err=>console.warn('SW registration failed:',err));
+  });
+}
+
+// Показ обновления при возврате на страницу
+let _smetappPrompt=null;
+window.addEventListener('beforeinstallprompt',(e)=>{
+  e.preventDefault();
+  _smetappPrompt=e;
+  // Показываем плашку только один раз за сессию
+  if(!sessionStorage.getItem('install-shown')){
+    setTimeout(()=>{
+      if(confirm('Установить «Калькулятор смет PRO» на главный экран?\n\nБудет работать офлайн и запускаться как обычное приложение.')){
+        _smetappPrompt.prompt();
+      }
+      sessionStorage.setItem('install-shown','1');
+    },5000);
+  }
+});
+
+function showToast(text){
+  const t=document.createElement('div');
+  t.textContent=text;
+  t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e3a8a;color:#fff;padding:12px 20px;border-radius:8px;font-size:14px;z-index:10000;box-shadow:0 4px 20px rgba(0,0,0,.3);max-width:90%;text-align:center;';
+  document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300);},5000);
+}
+
+// === Тёмная тема: переключение ===
+function applyTheme(t){
+  if(t==='dark'){document.body.classList.add('theme-dark');localStorage.setItem('smeta_theme','dark');}
+  else if(t==='light'){document.body.classList.remove('theme-dark');localStorage.setItem('smeta_theme','light');}
+  else{localStorage.removeItem('smeta_theme');}
+}
+(function(){
+  const t=localStorage.getItem('smeta_theme');
+  if(t==='dark')document.body.classList.add('theme-dark');
+  document.getElementById('themeToggle').addEventListener('click',()=>{
+    const isDark=document.body.classList.contains('theme-dark');
+    applyTheme(isDark?'light':'dark');
+  });
+})();
+
+// === Версия приложения (для отображения и кеша SW) ===
+const APP_VERSION='1.4.0';
+console.log('Калькулятор смет PRO v'+APP_VERSION);
+
+// === Проверка обновлений (раз в час) ===
+async function checkUpdates(){
+  if(!navigator.onLine)return;
+  try{
+    const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
+    if(!r.ok)return;
+    const data=await r.json();
+    if(data.version&&data.version!==APP_VERSION){
+      const dismissed=localStorage.getItem('update_dismissed');
+      if(dismissed===data.version)return;
+      const msg=`Доступна версия ${data.version}. Что нового: ${data.changelog||'улучшения'}.`;
+      if(confirm(msg+'\n\nОбновить страницу сейчас?')){
+        localStorage.setItem('update_dismissed',data.version);
+        if(data.updateUrl)location.href=data.updateUrl;else location.reload();
+      }else{
+        localStorage.setItem('update_dismissed',data.version);
+      }
+    }
+  }catch(e){/* нет связи — игнор */}
+}
+setTimeout(checkUpdates,5000);
+setInterval(checkUpdates,60*60*1000);
+
+// === Ссылка на канал обновлений в PRO ===
+const UPDATES_CHANNEL='https://t.me/smetapro_news';
+</script>
+
+<!-- МОДАЛКА: PRO-КЛЮЧ -->
+<div id="proKeyModal" class="modal" style="display:none;" onclick="if(event.target===this)closeProKeyModal()">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <h3>🔑 PRO-ключ</h3>
+    <div id="proModalBody"></div>
+    <button class="secondary" style="margin-top:14px;width:100%;" onclick="closeProKeyModal()">Закрыть</button>
+  </div>
+</div>
+
+<!-- МОДАЛКА: ДОБАВЛЕНИЕ / РЕДАКТИРОВАНИЕ РАБОТЫ В ПРОФИЛЕ -->
+<div id="workModal" class="modal" style="display:none;">
+  <div class="modal-box">
+    <h3 id="workModalTitle">➕ Новая работа</h3>
+    <label>Название работы</label>
+    <input type="text" id="wmName" placeholder="Например: Установка розетки" autocomplete="off">
+    <label>Цена, ₽</label>
+    <input type="number" id="wmPrice" placeholder="350" min="0" step="1" inputmode="numeric">
+    <label>Единица измерения</label>
+    <select id="wmUnit" onchange="onUnitChange()">
+      <optgroup label="Длина">
+        <option value="м">м (метр)</option>
+        <option value="п.м">п.м (погонный метр)</option>
+        <option value="км">км (километр)</option>
+        <option value="см">см (сантиметр)</option>
+        <option value="мм">мм (миллиметр)</option>
+      </optgroup>
+      <optgroup label="Площадь">
+        <option value="м²">м² (квадратный метр)</option>
+        <option value="см²">см² (квадратный сантиметр)</option>
+        <option value="100 м²">100 м² (сотка)</option>
+        <option value="га">га (гектар)</option>
+      </optgroup>
+      <optgroup label="Объём">
+        <option value="м³">м³ (кубический метр)</option>
+        <option value="л">л (литр)</option>
+        <option value="мл">мл (миллилитр)</option>
+      </optgroup>
+      <optgroup label="Вес">
+        <option value="кг">кг (килограмм)</option>
+        <option value="г">г (грамм)</option>
+        <option value="т">т (тонна)</option>
+      </optgroup>
+      <optgroup label="Штучные и упаковки">
+        <option value="шт">шт (штука)</option>
+        <option value="комп">комп (комплект)</option>
+        <option value="упак">упак (упаковка)</option>
+        <option value="рулон">рулон</option>
+        <option value="лист">лист</option>
+        <option value="баллон">баллон</option>
+        <option value="канистра">канистра</option>
+        <option value="мешок">мешок</option>
+      </optgroup>
+      <optgroup label="Мощность и электрика">
+        <option value="кВт">кВт (киловатт)</option>
+        <option value="Вт">Вт (ватт)</option>
+        <option value="А">А (ампер)</option>
+        <option value="В">В (вольт)</option>
+        <option value="кВА">кВА (киловольт-ампер)</option>
+      </optgroup>
+      <optgroup label="Время">
+        <option value="час">час</option>
+        <option value="мин">мин (минута)</option>
+        <option value="смена">смена</option>
+        <option value="день">день</option>
+      </optgroup>
+      <optgroup label="Услуги и точки">
+        <option value="точка">точка (электрика/сантехника)</option>
+        <option value="выезд">выезд</option>
+        <option value="замер">замер</option>
+        <option value="проект">проект</option>
+        <option value="диагностика">диагностика</option>
+        <option value="доставка">доставка</option>
+        <option value="монтаж">монтаж</option>
+        <option value="демонтаж">демонтаж</option>
+        <option value="установка">установка</option>
+        <option value="подключение">подключение</option>
+      </optgroup>
+      <optgroup label="Прочее">
+        <option value="%">% (процент)</option>
+        <option value="норма-час">норма-час</option>
+        <option value="пог. м">пог. м (погонный, длина рулона/плинтуса)</option>
+        <option value="__custom__">📝 Своя единица…</option>
+      </optgroup>
+    </select>
+    <input type="text" id="wmUnitCustom" placeholder="Введите свою единицу, например: м.пог." style="display:none;margin-top:6px;">
+    <div class="row" style="margin-top:14px;">
+      <button class="ok" onclick="saveWorkFromModal()">💾 Сохранить</button>
+      <button class="secondary" onclick="closeWorkModal()">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .works-draft{display:flex;flex-direction:column;gap:6px;min-height:8px;}
+  .works-draft:empty::before{content:"Пока работ нет — нажмите «Добавить работу» ниже";display:block;color:var(--muted);font-size:13px;padding:8px 4px;}
+  .works-draft .wd-item{display:flex;align-items:center;gap:8px;background:#f3f4f6;border-radius:8px;padding:8px 10px;font-size:14px;}
+  .works-draft .wd-item .wd-name{flex:1;}
+  .works-draft .wd-item .wd-meta{color:var(--muted);font-size:12px;white-space:nowrap;}
+  .works-draft .wd-item button{background:transparent;border:none;color:#ef4444;font-size:18px;cursor:pointer;padding:2px 6px;line-height:1;}
+  .works-draft .wd-item button:hover{color:#b91c1c;}
+  .empty{color:var(--muted);text-align:center;padding:14px;font-size:13px;}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px;}
+  .modal-box{background:#fff;border-radius:12px;padding:18px;width:100%;max-width:420px;box-shadow:0 10px 40px rgba(0,0,0,.2);}
+  .modal-box h3{margin:0 0 12px;font-size:17px;}
+  .modal-box label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px;}
+  .modal-box input,.modal-box select{width:100%;box-sizing:border-box;}
+</style>
+
+</body>
+</html>
