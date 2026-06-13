@@ -1,0 +1,63 @@
+{
+  "name": "Калькулятор смет PRO",
+  "short_name": "Смета PRO",
+  "description": "Калькулятор смет для мастеров: электрик, сантехник, отделочник и др. Работает офлайн.",
+  "lang": "ru",
+  "dir": "ltr",
+  "start_url": "./calculator-universal.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#1e3a8a",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Новая смета",
+      "short_name": "Смета",
+      "description": "Создать новую смету",
+      "url": "./calculator-universal.html#new",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Мои сметы",
+      "short_name": "Сметы",
+      "description": "Сохранённые сметы",
+      "url": "./calculator-universal.html#estimates",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Профиль работ",
+      "short_name": "Профиль",
+      "description": "Настройка цен и работ",
+      "url": "./calculator-universal.html#profile",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
