@@ -479,10 +479,23 @@
 //  БАЗА ДАННЫХ — БЕЗ ГОТОВЫХ ПРОФИЛЕЙ
 // ═══════════════════════════════════════════════════════
 
-let DB = JSON.parse(localStorage.getItem('calc_pro_v2'));
-if(!DB){
-  DB = {profiles:[], estimates:[], mats:[], usage:{savedCount:0, isPro:false}};
+// === Защищённая загрузка DB (на случай битого localStorage) ===
+let DB;
+try{
+  const raw=localStorage.getItem('calc_pro_v2');
+  DB=raw?JSON.parse(raw):null;
+  // Проверка структуры — иначе это битая база
+  if(!DB||typeof DB!=='object'||!Array.isArray(DB.profiles)){throw new Error('Битая структура DB');}
+}catch(err){
+  console.error('Не удалось загрузить базу, создаю новую:',err);
+  // Бэкап битой базы
+  try{const broken=localStorage.getItem('calc_pro_v2');if(broken)localStorage.setItem('calc_pro_v2_broken_'+Date.now(),broken);}catch(e){}
+  DB={profiles:[],estimates:[],mats:[],usage:{savedCount:0,isPro:false}};
 }
+if(!DB.usage)DB.usage={savedCount:0,isPro:false};
+if(!Array.isArray(DB.profiles))DB.profiles=[];
+if(!Array.isArray(DB.estimates))DB.estimates=[];
+if(!Array.isArray(DB.mats))DB.mats=[];
 function saveDB(){localStorage.setItem('calc_pro_v2',JSON.stringify(DB));}
 
 // ═══════════════════════════════════════════════════════
@@ -1284,7 +1297,7 @@ async function saveEstimate(){
   objectPhotos=[];receiptPhotos=[];signatureData=null;
   document.getElementById('objPhotoCount').textContent='0';
   document.getElementById('recPhotoCount').textContent='0';
-  const sigCanvas=document.getElementById('signatureCanvas');if(sigCanvas){const ctx=sigCanvas.getContext('2d');ctx&&ctx.clearRect(0,0,sigCanvas.width,sigCanvas.height);}
+  const sigCanvas=document.getElementById('sigCanvas');if(sigCanvas){const ctx=sigCanvas.getContext('2d');ctx&&ctx.clearRect(0,0,sigCanvas.width,sigCanvas.height);}
   document.getElementById('objectPhotosGrid').innerHTML='';
   document.getElementById('receiptPhotosGrid').innerHTML='';
   alert('Сохранено! Осталось бесплатных смет: '+(isPro?'∞':Math.max(0,3-DB.usage.savedCount)));
@@ -1953,12 +1966,19 @@ function renderProPage(){
 //  СТАРТ
 // ═══════════════════════════════════════════════════════
 
-maybeCreateDemo();
-initSignaturePad();
-populateProfiles();
-updateUIState();
-renderCalc();
-startReminderPoll();
+// === Запуск приложения (защищён от ошибок) ===
+try{
+  maybeCreateDemo();
+  initSignaturePad();
+  populateProfiles();
+  updateUIState();
+  renderCalc();
+  startReminderPoll();
+  console.log('✓ Инициализация завершена');
+}catch(err){
+  console.error('✗ Ошибка инициализации:',err);
+  alert('Ошибка при запуске: '+err.message+'. Откройте DevTools (Cmd+Alt+I) → Console для деталей.');
+}
 
 // === Миграция: перенос фото из localStorage в IndexedDB (если есть старый формат) ===
 (async function migratePhotosToIDB(){
