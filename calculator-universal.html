@@ -79,23 +79,7 @@
   td{font-size:14px;vertical-align:middle;}
   .num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;}
   .small{font-size:12px;color:var(--muted);}
-  .result{font-size:24px;font-weight:800;color:#fff;text-align:center;padding:14px;background:linear-gradient(135deg,#059669 0%,#047857 100%);border-radius:10px;margin-top:10px;box-shadow:0 2px 8px rgba(5,150,105,0.25);font-variant-numeric:tabular-nums;letter-spacing:0.3px;}
-  .result-breakdown{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;}
-  .result-row{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#fff;border-radius:6px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;border:1px solid #e5e7eb;}
-  .result-row.works{background:#eff6ff;border-color:#93c5fd;color:#1e40af;}
-  .result-row.mats{background:#f0fdf4;border-color:#86efac;color:#166534;}
-  .result-row.disc{background:#fef2f2;border-color:#fca5a5;color:#991b1b;}
-  .result-row.markup{background:#fffbeb;border-color:#fcd34d;color:#92400e;}
-  .result-row .lbl{font-size:11px;text-transform:uppercase;letter-spacing:0.5px;opacity:0.75;font-weight:600;}
-  .result-row .val{font-size:15px;font-weight:700;}
-  @media(prefers-color-scheme:dark){
-    .result{background:linear-gradient(135deg,#059669 0%,#065f46 100%);box-shadow:0 2px 8px rgba(5,150,105,0.4);}
-    .result-row{background:#1f2937;border-color:#374151;color:#e5e7eb;}
-    .result-row.works{background:#1e3a8a;border-color:#3b82f6;color:#dbeafe;}
-    .result-row.mats{background:#14532d;border-color:#22c55e;color:#dcfce7;}
-    .result-row.disc{background:#7f1d1d;border-color:#ef4444;color:#fee2e2;}
-    .result-row.markup{background:#78350f;border-color:#f59e0b;color:#fef3c7;}
-  }
+  .result{font-size:22px;font-weight:700;color:var(--ok);text-align:center;padding:12px;background:#ecfdf5;border-radius:8px;margin-top:8px;}
   .chip{display:inline-block;padding:3px 10px;border-radius:14px;font-size:12px;font-weight:600;color:#fff;margin:2px;}
   .chip.ok{background:var(--ok);}
   .chip.accent{background:var(--accent);}
@@ -133,25 +117,21 @@
   .locked::after{content:"🔒";position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:18px;}
   .feature-list{text-align:left;margin-top:10px;}
   .feature-list li{margin:6px 0;font-size:14px;}
-  .funnel-card{background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:8px;margin-bottom:6px;font-size:13px;cursor:grab;transition:transform 0.15s,box-shadow 0.15s,opacity 0.15s;}
-  .funnel-card:active{cursor:grabbing;}
-  .funnel-card.dragging{opacity:0.4;transform:scale(0.98);}
-  .funnel-card.drag-over{box-shadow:0 0 0 2px #2563eb;}
+  .funnel-card{background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:8px;margin-bottom:6px;font-size:13px;}
   .funnel-card .amt{font-weight:700;color:#1f2937;}
   .funnel-card .date{font-size:11px;color:#9ca3af;}
   .paid-btn{padding:3px 10px;border-radius:12px;font-size:12px;border:none;cursor:pointer;font-weight:600;}
   .paid-yes{background:#d1fae5;color:#047857;}
   .paid-no{background:#fee2e2;color:#b91c1c;}
-  .status-new{background:#dbeafe;color:#1e40af;}
-  .status-active{background:#fed7aa;color:#9a3412;}
-  .status-done{background:#d1fae5;color:#047857;}
-  .status-archive{background:#fecaca;color:#991b1b;}
-  .status-pill{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid transparent;}
-  .funnel-col{flex:1;min-width:140px;background:#f9fafb;border-radius:8px;padding:8px;transition:background 0.15s;}
-  .funnel-col.drag-active{background:#dbeafe;outline:2px dashed #2563eb;}
-  .funnel-col h4{margin:0 0 6px;font-size:12px;color:#374151;text-align:center;border-bottom:1px solid #e5e7eb;padding-bottom:6px;font-weight:600;}
+  .status-select{padding:4px 8px;border-radius:6px;font-size:12px;font-weight:600;border:none;color:#fff;background:#9ca3af;}
+  .status-new{background:#2563eb;}
+  .status-active{background:#d97706;}
+  .status-done{background:#059669;}
+  .status-archive{background:#dc2626;}
+  .funnel-col{flex:1;min-width:130px;background:#f9fafb;border-radius:8px;padding:6px;}
+  .funnel-col h4{margin:0 0 6px;font-size:11px;color:#6b7280;text-align:center;border-bottom:1px solid #e5e7eb;padding-bottom:4px;}
   .kanban-hint{font-size:12px;color:#9ca3af;text-align:center;margin:6px 0;}
-  .crm-funnel{display:flex;gap:8px;margin-bottom:8px;overflow-x:auto;padding-bottom:4px;}
+  .crm-funnel{display:flex;gap:6px;margin-bottom:8px;overflow-x:auto;padding-bottom:4px;}
 </style>
 </head>
 <body>
@@ -932,18 +912,13 @@ let signatureData=null;
 // ═══════════════════════════════════════════════════════
 
 function switchTab(name){
-  try{
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-    const btn=document.querySelector('.tab[onclick*="'+name+'"]');
-    if(btn)btn.classList.add('active');
-    const sec=document.getElementById('sec-'+name);
-    if(sec)sec.classList.add('active');
-    if(name==='estimates')renderEstimates();
-    if(name==='crm')renderCRM();
-    if(name==='pro')renderProPage();
-    if(name==='profile')populateProfiles();
-  }catch(e){console.warn('switchTab:',e);}
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  if(event&&event.target) event.target.classList.add('active');
+  document.getElementById('sec-'+name).classList.add('active');
+  if(name==='estimates') renderEstimates();
+  if(name==='crm') renderCRM();
+  if(name==='pro') renderProPage();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1148,22 +1123,20 @@ function clearSig(){
 }
 
 function renderCalc(){
-  if(typeof currentState!=='object'||currentState===null)currentState={};
   currentProfile=document.getElementById('profileSelect')?.value||currentProfile;
   const p=getProfile(currentProfile);
   if(!p)return;
   renderTemplates();
   const cont=document.getElementById('worksList');
-  if(!cont)return;
   cont.innerHTML='';
   if(!p.works||p.works.length===0){cont.innerHTML='<p class="small">Нет работ. Добавьте в профиль.</p>';}
   p.works.forEach((w,i)=>{
     const qty=currentState[w.name]||0;
     const div=document.createElement('div');div.className='work-row';
     div.innerHTML=
-      '<input type="checkbox" '+(qty>0?'checked':'')+' onchange="toggleWork(\\''+w.name.replace(/'/g,"\\'")+'\\',this.checked)">'+
+      '<input type="checkbox" '+(qty>0?'checked':'')+' onchange="toggleWork(\''+w.name.replace(/'/g,"\\'")+'\',this.checked)">'+
       '<div class="title">'+w.name+' <span class="price">('+w.price+' ₽/'+w.unit+')</span></div>'+
-      '<input type="number" class="qty" value="'+qty+'" min="0" onchange="setWorkQty(\\''+w.name.replace(/'/g,"\\'")+'\\',this.value)">'+
+      '<input type="number" class="qty" value="'+qty+'" min="0" onchange="setWorkQty(\''+w.name.replace(/'/g,"\\'")+'\',this.value)">'+
       '<div style="flex:0 0 60px;text-align:right" class="small" id="sum-'+i+'">'+(qty*w.price)+' ₽</div>';
     cont.appendChild(div);
   });
@@ -1301,13 +1274,7 @@ function calcTotals(){
   let final=afterDisc*(1+markup/100);
   document.getElementById('finalResult').textContent=Math.round(final).toLocaleString('ru-RU')+' ₽';
   const br=document.getElementById('finalBreakdown');
-  let rows='<div class="result-breakdown">';
-  rows+='<div class="result-row works"><span class="lbl">Работы</span><span class="val">'+Math.round(workSum).toLocaleString('ru-RU')+' ₽</span></div>';
-  if(matSum>0)rows+='<div class="result-row mats"><span class="lbl">Материалы</span><span class="val">'+Math.round(matSum).toLocaleString('ru-RU')+' ₽</span></div>';
-  if(disc>0)rows+='<div class="result-row disc"><span class="lbl">Скидка '+disc+'%</span><span class="val">−'+Math.round(sub-afterDisc).toLocaleString('ru-RU')+' ₽</span></div>';
-  if(markup>0)rows+='<div class="result-row markup"><span class="lbl">Наценка '+markup+'%</span><span class="val">+'+Math.round(final-afterDisc).toLocaleString('ru-RU')+' ₽</span></div>';
-  rows+='</div>';
-  br.innerHTML=rows;
+  br.innerHTML='Работы: '+workSum.toLocaleString('ru-RU')+' ₽ | Материалы: '+matSum.toLocaleString('ru-RU')+' ₽'+(disc>0?'<br>Скидка '+disc+'%: −'+(sub-afterDisc).toFixed(0)+' ₽':'')+(markup>0?'<br>Наценка '+markup+'%: +'+(final-afterDisc).toFixed(0)+' ₽':'');
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1472,84 +1439,48 @@ async function loadEstimate(id){
   try{
     const e=DB.estimates.find(x=>x.id===id);
     if(!e){console.warn('loadEstimate: estimate not found',id);return;}
-    // Жёсткий сброс state (на случай битых данных)
-    if(typeof currentState!=='object'||currentState===null)currentState={};
-    Object.keys(currentState).forEach(k=>delete currentState[k]);
-    objectPhotos=[];
-    receiptPhotos=[];
-    releaseAllPhotoURLs();
-    signatureData=null;
-    // Чистим canvas подписи если был
-    if(_sigPad&&_sigPad.ctx){
-      try{_sigPad.ctx.clearRect(0,0,_sigPad.canvas.width,_sigPad.canvas.height);}catch(e){}
-    }
-    // Заполняем поля
-    const safeVal=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val;};
-    safeVal('clientName',e.client||'');
-    safeVal('estimateNotes',e.notes||'');
-    safeVal('agreedDate',e.agreedDate||'');
-    safeVal('agreedTime',e.agreedTime||'');
-    safeVal('mLength',e.measure?.L||'');
-    safeVal('mWidth',e.measure?.W||'');
-    safeVal('mHeight',e.measure?.H||'');
-    try{calcMeasure();}catch(err){console.warn('calcMeasure:',err);}
-    // Профиль
+    document.getElementById('clientName').value=e.client||'';
+    document.getElementById('estimateNotes').value=e.notes||'';
+    if(document.getElementById('agreedDate'))document.getElementById('agreedDate').value=e.agreedDate||'';
+    if(document.getElementById('agreedTime'))document.getElementById('agreedTime').value=e.agreedTime||'';
+    // Замеры
+    if(document.getElementById('mLength'))document.getElementById('mLength').value=e.measure?.L||'';
+    if(document.getElementById('mWidth'))document.getElementById('mWidth').value=e.measure?.W||'';
+    if(document.getElementById('mHeight'))document.getElementById('mHeight').value=e.measure?.H||'';
+    calcMeasure();
+    // Сначала находим профиль, потом populate (чтобы select знал все варианты)
     const profMatch=DB.profiles.find(p=>p.name===e.profileName);
     if(profMatch)currentProfile=profMatch.id;
-    try{populateProfiles();}catch(err){console.warn('populateProfiles:',err);}
-    safeVal('profileSelect',currentProfile);
-    // Заполняем currentState из сохранённой сметы
-    (Array.isArray(e.works)?e.works:[]).forEach(w=>{if(w&&w.name)currentState[w.name]=Number(w.qty)||0;});
-    (Array.isArray(e.mats)?e.mats:[]).forEach(m=>{
-      const idx=DB.mats.findIndex(x=>x.name===m.name);
-      if(idx>-1)currentState['_mat_'+idx]=Number(m.qty)||0;
-    });
-    safeVal('discount',e.discount||0);
-    safeVal('markup',e.markup||0);
-    // Фото (с восстановлением URL из IDB)
-    try{
-      const newObjPhotos=Array.isArray(e.objectPhotos)?e.objectPhotos.filter(Boolean):[];
-      const newRecPhotos=Array.isArray(e.receiptPhotos)?e.receiptPhotos.filter(Boolean):[];
-      for(const k of newObjPhotos){
-        if(k&&!k.startsWith('draft:')){
-          try{const blob=await idbGet('photos',k);if(blob)_idbUrlCache[k]=URL.createObjectURL(blob);}catch(err){console.warn('photo load:',k,err);}
-        }
-      }
-      for(const k of newRecPhotos){
-        if(k&&!k.startsWith('draft:')){
-          try{const blob=await idbGet('photos',k);if(blob)_idbUrlCache[k]=URL.createObjectURL(blob);}catch(err){console.warn('receipt load:',k,err);}
-        }
-      }
-      objectPhotos=newObjPhotos;
-      receiptPhotos=newRecPhotos;
-    }catch(err){console.warn('photos:',err);}
+    populateProfiles();
+    if(document.getElementById('profileSelect')&&profMatch)document.getElementById('profileSelect').value=currentProfile;
+    // Полный сброс state
+    currentState={};
+    (e.works||[]).forEach(w=>{if(w&&w.name)currentState[w.name]=w.qty||0;});
+    (e.mats||[]).forEach(m=>{const idx=DB.mats.findIndex(x=>x.name===m.name);if(idx>-1)currentState['_mat_'+idx]=m.qty||0;});
+    if(document.getElementById('discount'))document.getElementById('discount').value=e.discount||0;
+    if(document.getElementById('markup'))document.getElementById('markup').value=e.markup||0;
+    objectPhotos=Array.isArray(e.objectPhotos)?e.objectPhotos.filter(Boolean):[];
+    receiptPhotos=Array.isArray(e.receiptPhotos)?e.receiptPhotos.filter(Boolean):[];
+    releaseAllPhotoURLs();
     // Подпись
-    if(e.signature&&!String(e.signature).startsWith('data:')){
+    signatureData=null;
+    if(e.signature&&!e.signature.startsWith('data:')){
       try{
         const blob=await idbGet('signatures',e.signature);
         if(blob){
+          const url=URL.createObjectURL(blob);
           signatureData=e.signature;
           const c=document.getElementById('sigCanvas');
-          if(c){
-            const url=URL.createObjectURL(blob);
-            const ctx=c.getContext('2d');
-            const img=new Image();
-            img.onload=()=>{try{ctx.drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);}catch(err){console.warn(err);}};
-            img.onerror=()=>URL.revokeObjectURL(url);
-            img.src=url;
-          }
+          if(c){const ctx=c.getContext('2d');const img=new Image();img.onload=()=>{ctx.drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);};img.src=url;}
         }
       }catch(err){console.warn('loadEstimate: signature load failed',err);}
     }
-    // Финальный рендер
-    try{renderCalc();}catch(err){console.warn('renderCalc:',err);}
-    try{renderPhotoGrid();}catch(err){console.warn('renderPhotoGrid:',err);}
-    try{calcTotals();}catch(err){console.warn('calcTotals:',err);}
+    renderCalc();
     switchTab('calc');
     console.log('loadEstimate: OK',id,'works:',(e.works||[]).length,'photos:',objectPhotos.length);
   }catch(err){
     console.error('loadEstimate: FATAL',err);
-    alert('Не удалось открыть смету: '+err.message+'\n\nПопробуйте очистить данные сайта (DevTools → Application → Storage → Clear) и попробовать снова.');
+    alert('Не удалось открыть смету: '+err.message);
   }
 }
 async function deleteEstimate(id){
@@ -1606,94 +1537,38 @@ function renderCRM(){
 
   const colTitles={new:'🆕 Новые',active:'🟠 В работе',done:'🟢 Готово',archive:'🔴 Архив'};
   const colColors={new:'#eff6ff',active:'#fffbeb',done:'#ecfdf5',archive:'#fef2f2'};
-  const statusPills={new:'🆕 Новый',active:'🟠 В работе',done:'🟢 Готово',archive:'🔴 Архив'};
 
   let html='<div class="crm-funnel">';
   for(const s of ['new','active','done','archive']){
-    html+='<div class="funnel-col" data-status="'+s+'" style="background:'+colColors[s]+'" ondragover="kanbanDragOver(event)" ondragleave="kanbanDragLeave(event)" ondrop="kanbanDrop(event)">';
+    html+='<div class="funnel-col" style="background:'+colColors[s]+'">';
     html+='<h4>'+colTitles[s]+' ('+cols[s].length+')</h4>';
-    if(cols[s].length===0) html+='<p class="kanban-hint">— перетащите сюда —</p>';
+    if(cols[s].length===0) html+='<p class="kanban-hint">—</p>';
     else{
       cols[s].forEach(e=>{
         const d=new Date(e.date).toLocaleDateString('ru-RU',{day:'numeric',month:'short'});
         const paidBtn=e.paid?
-          '<button class="paid-btn paid-yes" onclick="toggleEstimatePaid('+e.id+')" title="Оплачен">✅ Оплачен</button>':
-          '<button class="paid-btn paid-no" onclick="toggleEstimatePaid('+e.id+')" title="Не оплачен">❌ Не опл.</button>';
-        html+='<div class="funnel-card" draggable="true" data-id="'+e.id+'" '+
-          'ondragstart="kanbanDragStart(event)" ondragend="kanbanDragEnd(event)" ondragover="kanbanCardDragOver(event)" ondragleave="kanbanCardDragLeave(event)"'+
-          '>'+
-          '<div class="top"><b>'+(e.client||'Без имени')+'</b> <span class="amt">'+e.total+'</span></div>'+
+          '<button class="paid-yes" onclick="toggleEstimatePaid('+e.id+')">✅ Опл.</button>':
+          '<button class="paid-no" onclick="toggleEstimatePaid('+e.id+')">❌ Нет</button>';
+        html+='<div class="funnel-card">'+
+          '<div class="top"><b>'+e.client+'</b> <span class="amt">'+e.total+'</span></div>'+
           '<div class="date">'+d+' · '+e.profileName+'</div>'+
-          '<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;align-items:center;">'+paidBtn+
-          '<span class="status-pill status-'+s+'" onclick="cycleStatus('+e.id+')" title="Нажмите чтобы сменить статус">'+statusPills[s]+'</span>'+
-          '<button class="secondary" style="font-size:12px;margin-left:auto;" onclick="loadEstimate('+e.id+')" title="Открыть">📂</button>'+
-          '<button class="danger" style="font-size:12px;" onclick="deleteEstimate('+e.id+')" title="Удалить">🗑</button>'+
+          '<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;">'+paidBtn+
+          '<select class="status-select '+getStatusClass(e.status)+'" onchange="updateEstimateStatus('+e.id+',this.value)">'+
+          '<option value="new" '+(e.status==='new'?'selected':'')+'>🆕 Новый</option>'+
+          '<option value="active" '+(e.status==='active'?'selected':'')+'>🟠 В работе</option>'+
+          '<option value="done" '+(e.status==='done'?'selected':'')+'>🟢 Готово</option>'+
+          '<option value="archive" '+(e.status==='archive'?'selected':'')+'>🔴 Архив</option>'+
+          '</select>'+
+          '<button class="secondary" style="font-size:12px;" onclick="loadEstimate('+e.id+')">📂</button>'+
+          '<button class="danger" style="font-size:12px;" onclick="deleteEstimate('+e.id+')">🗑</button>'+
           '</div></div>';
       });
     }
     html+='</div>';
   }
   html+='</div>';
-  html+='<p class="small" style="margin-top:8px;text-align:center;color:#6b7280;">💡 Перетаскивайте карточки между колонками или нажмите на плашку статуса</p>';
   cont.innerHTML=html;
   updateCrmCounters();
-}
-
-// === Drag-and-Drop в канбане ===
-let _draggedEstimateId=null;
-function kanbanDragStart(ev){
-  _draggedEstimateId=ev.currentTarget.dataset.id;
-  ev.currentTarget.classList.add('dragging');
-  ev.dataTransfer.effectAllowed='move';
-  try{ev.dataTransfer.setData('text/plain',_draggedEstimateId);}catch(e){}
-}
-function kanbanDragEnd(ev){
-  ev.currentTarget.classList.remove('dragging');
-  document.querySelectorAll('.funnel-col.drag-active').forEach(c=>c.classList.remove('drag-active'));
-  _draggedEstimateId=null;
-}
-function kanbanDragOver(ev){
-  ev.preventDefault();
-  ev.dataTransfer.dropEffect='move';
-  const col=ev.currentTarget;
-  col.classList.add('drag-active');
-}
-function kanbanDragLeave(ev){
-  if(ev.currentTarget===ev.target||!ev.currentTarget.contains(ev.relatedTarget)){
-    ev.currentTarget.classList.remove('drag-active');
-  }
-}
-function kanbanCardDragOver(ev){
-  ev.preventDefault();
-  ev.stopPropagation();
-  ev.dataTransfer.dropEffect='move';
-}
-function kanbanCardDragLeave(ev){}
-function kanbanDrop(ev){
-  ev.preventDefault();
-  ev.currentTarget.classList.remove('drag-active');
-  const newStatus=ev.currentTarget.dataset.status;
-  const id=parseInt(_draggedEstimateId||ev.dataTransfer.getData('text/plain'),10);
-  if(!id||!newStatus)return;
-  const e=DB.estimates.find(x=>x.id===id);
-  if(!e)return;
-  if(e.status===newStatus)return;
-  e.status=newStatus;
-  saveDB();
-  renderCRM();
-  if(typeof updateCrmCounters==='function')updateCrmCounters();
-}
-// Цикл статусов по клику на плашку
-function cycleStatus(id){
-  const order=['new','active','done','archive'];
-  const e=DB.estimates.find(x=>x.id===id);
-  if(!e)return;
-  const cur=order.indexOf(e.status);
-  const next=order[(cur+1)%order.length];
-  e.status=next;
-  saveDB();
-  renderCRM();
-  if(typeof updateCrmCounters==='function')updateCrmCounters();
 }
 
 function updateCrmCounters(){
