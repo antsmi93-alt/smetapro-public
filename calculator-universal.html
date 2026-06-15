@@ -31,9 +31,13 @@
 <link rel="apple-touch-startup-image" href="splash-base.png">
 
 <title>Калькулятор смет PRO</title>
+<!-- Шрифт с кириллицей для всех устройств (Android, iOS, десктоп) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap&subset=cyrillic,cyrillic-ext,latin">
 <style>
   :root{--bg:#f0f2f5;--card:#fff;--accent:#2563eb;--ok:#059669;--warn:#d97706;--danger:#dc2626;--text:#1f2937;--muted:#6b7280;--border:#e5e7eb;--input:#fff;}
-  *{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent;}
+  *{box-sizing:border-box;font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent;}
   body{background:var(--bg);margin:0;padding:12px;color:var(--text);font-size:15px;transition:background .2s,color .2s;}
   /* === Тёмная тема (auto) === */
   @media(prefers-color-scheme:dark){
@@ -1510,25 +1514,25 @@ async function printEstimate(){
   try{
     const JsPDF=await Promise.race([loadJsPDF(),new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),3000))]);
     const doc=new JsPDF({unit:'mm',format:'a4'});
-    // Шапка
-    doc.setFontSize(18);doc.setFont('helvetica','bold');
-    doc.text(`SMETA — ${client}`,15,18);
-    doc.setFontSize(10);doc.setFont('helvetica','normal');
-    doc.text(`Profile: ${p.name}`,15,25);
-    if(notes)doc.text(`Notes: ${notes.slice(0,200)}`,15,30);
-    doc.text(`Date: ${new Date().toLocaleDateString('ru-RU')}`,15,35);
+    // Шапка (на русском)
+    doc.setFont('helvetica','bold');doc.setFontSize(18);
+    doc.text('SMETA — '+client,15,18);
+    doc.setFont('helvetica','normal');doc.setFontSize(10);
+    doc.text('Профиль: '+p.name,15,25);
+    if(notes)doc.text('Примечание: '+notes.slice(0,200),15,30);
+    doc.text('Дата: '+new Date().toLocaleDateString('ru-RU'),15,35);
     // Таблица работ
     let y=45;
-    doc.setFontSize(12);doc.setFont('helvetica','bold');doc.text('WORKS',15,y);y+=6;
-    doc.setFontSize(9);doc.setFont('helvetica','normal');
-    doc.text('#',15,y);doc.text('Name',22,y);doc.text('Qty',120,y);doc.text('Unit',135,y);doc.text('Price',150,y);doc.text('Sum',175,y);y+=5;
-    works.forEach((w,i)=>{doc.text(String(i+1),15,y);doc.text(w.name.slice(0,45),22,y);doc.text(String(w.qty),120,y);doc.text(w.unit,135,y);doc.text(String(w.price),150,y);doc.text(String(w.sum),175,y);y+=5;if(y>270){doc.addPage();y=20;}});
-    y+=3;doc.setFont('helvetica','bold');doc.text(`Total works: ${wSum} RUB`,15,y);y+=8;
-    if(mats.length){doc.setFontSize(12);doc.text('MATERIALS',15,y);y+=6;doc.setFontSize(9);doc.setFont('helvetica','normal');mats.forEach((m,i)=>{doc.text(String(i+1),15,y);doc.text(m.name.slice(0,45),22,y);doc.text(String(m.qty),120,y);doc.text(m.unit,135,y);doc.text(String(m.price),150,y);doc.text(String(m.sum),175,y);y+=5;if(y>270){doc.addPage();y=20;}});y+=3;doc.setFont('helvetica','bold');doc.text(`Total materials: ${mSum} RUB`,15,y);y+=8;}
-    if(disc||markup){doc.setFont('helvetica','normal');doc.text(`Discount: ${disc}%  Markup: ${markup}%`,15,y);y+=6;}
-    doc.setFontSize(14);doc.setFont('helvetica','bold');doc.text(`TOTAL: ${total.toLocaleString('ru-RU')} RUB`,15,y+5);
+    doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text('РАБОТЫ',15,y);y+=6;
+    doc.setFont('helvetica','normal');doc.setFontSize(9);
+    doc.text('№',15,y);doc.text('Наименование',22,y);doc.text('Кол-во',115,y);doc.text('Ед.',130,y);doc.text('Цена',145,y);doc.text('Сумма',170,y);y+=5;
+    works.forEach((w,i)=>{doc.text(String(i+1),15,y);doc.text(w.name.slice(0,42),22,y);doc.text(String(w.qty),115,y);doc.text(w.unit,130,y);doc.text(String(w.price)+' руб',145,y);doc.text(String(w.sum)+' руб',170,y);y+=5;if(y>270){doc.addPage();y=20;}});
+    y+=3;doc.setFont('helvetica','bold');doc.text('Итого работы: '+wSum+' руб',15,y);y+=8;
+    if(mats.length){doc.setFontSize(12);doc.text('МАТЕРИАЛЫ',15,y);y+=6;doc.setFontSize(9);doc.setFont('helvetica','normal');mats.forEach((m,i)=>{doc.text(String(i+1),15,y);doc.text(m.name.slice(0,42),22,y);doc.text(String(m.qty),115,y);doc.text(m.unit,130,y);doc.text(String(m.price)+' руб',145,y);doc.text(String(m.sum)+' руб',170,y);y+=5;if(y>270){doc.addPage();y=20;}});y+=3;doc.setFont('helvetica','bold');doc.text('Итого материалы: '+mSum+' руб',15,y);y+=8;}
+    if(disc||markup){doc.setFont('helvetica','normal');doc.text('Скидка: '+disc+'%   Наценка: '+markup+'%',15,y);y+=6;}
+    doc.setFontSize(14);doc.setFont('helvetica','bold');doc.text('ИТОГО: '+total.toLocaleString('ru-RU')+' руб',15,y+5);
     // Сохранение
-    const fname=`smeta-${client.replace(/[^\w]/g,'_')}-${new Date().toISOString().slice(0,10)}.pdf`;
+    const fname='smeta-'+(client.replace(/[^\wа-яё]/gi,'_')||'client')+'-'+new Date().toISOString().slice(0,10)+'.pdf';
     doc.save(fname);
     pdfOk=true;
   }catch(err){
@@ -1563,10 +1567,41 @@ async function printEstimate(){
 }
 function shareEstimate(){
   const client=document.getElementById('clientName').value.trim()||'Клиент';
-  const total=document.getElementById('finalResult').textContent;
-  const text='Смета для '+client+'. Профиль: '+getProfile(currentProfile).name+'. Итого: '+total;
-  if(navigator.share){navigator.share({title:'Смета',text:text});}
-  else{const a=document.createElement('a');a.href='https://t.me/share/url?url='+encodeURIComponent(location.href)+'&text='+encodeURIComponent(text);a.target='_blank';a.click();}
+  const notes=document.getElementById('estimateNotes')?.value||'';
+  const p=getProfile(currentProfile);
+  if(!p){alert('Сначала выберите профиль');return;}
+  // Сбор данных (полный список работ и материалов)
+  let wSum=0,mSum=0;
+  const works=[];p.works.forEach(w=>{const q=currentState[w.name]||0;if(q>0){const s=q*w.price;works.push({...w,qty:q,sum:s});wSum+=s;}});
+  const mats=[];(DB.mats||[]).forEach((m,i)=>{const q=currentState['_mat_'+i]||0;if(q>0){const s=q*m.price;mats.push({...m,qty:q,sum:s});mSum+=s;}});
+  const disc=parseFloat(document.getElementById('discount')?.value)||0;
+  const markup=parseFloat(document.getElementById('markup')?.value)||0;
+  const total=Math.round((wSum+mSum)*(1-disc/100)*(1+markup/100));
+  // Текст для шаринга — полный
+  let text='📋 СМЕТА\n\n';
+  text+='Клиент: '+client+'\n';
+  text+='Профиль: '+p.name+'\n';
+  text+='Дата: '+new Date().toLocaleString('ru-RU')+'\n';
+  if(notes)text+='\nПримечание: '+notes.slice(0,300)+'\n';
+  if(works.length){
+    text+='\n— РАБОТЫ —\n';
+    works.forEach((w,i)=>{text+=(i+1)+'. '+w.name+' — '+w.qty+' '+w.unit+' × '+w.price+' ₽ = '+w.sum.toLocaleString('ru-RU')+' ₽\n';});
+    text+='Итого работы: '+wSum.toLocaleString('ru-RU')+' ₽\n';
+  }
+  if(mats.length){
+    text+='\n— МАТЕРИАЛЫ —\n';
+    mats.forEach((m,i)=>{text+=(i+1)+'. '+m.name+' — '+m.qty+' '+m.unit+' × '+m.price+' ₽ = '+m.sum.toLocaleString('ru-RU')+' ₽\n';});
+    text+='Итого материалы: '+mSum.toLocaleString('ru-RU')+' ₽\n';
+  }
+  if(disc||markup)text+='\nСкидка: '+disc+'% · Наценка: '+markup+'%\n';
+  text+='\n💰 ИТОГО: '+total.toLocaleString('ru-RU')+' ₽';
+  if(navigator.share){navigator.share({title:'Смета для '+client,text:text}).catch(()=>{});}
+  else if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(()=>alert('Смета скопирована в буфер обмена'),()=>fallbackCopy(text));
+  }else{fallbackCopy(text);}
+}
+function fallbackCopy(text){
+  const a=document.createElement('textarea');a.value=text;document.body.appendChild(a);a.select();try{document.execCommand('copy');alert('Смета скопирована');}catch(e){alert('Не удалось скопировать');}document.body.removeChild(a);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2080,7 +2115,7 @@ function applyTheme(t){
 })();
 
 // === Версия приложения (для отображения и кеша SW) ===
-const APP_VERSION='1.4.1';
+const APP_VERSION='1.4.2';
 console.log('Калькулятор смет PRO v'+APP_VERSION);
 
 // === DEV-режим: ?dev=1 в URL открывает все PRO-функции ===
