@@ -117,7 +117,10 @@
   .locked::after{content:"🔒";position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:18px;}
   .feature-list{text-align:left;margin-top:10px;}
   .feature-list li{margin:6px 0;font-size:14px;}
-  .funnel-card{background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:8px;margin-bottom:6px;font-size:13px;}
+  .funnel-card{background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:8px;margin-bottom:6px;font-size:13px;cursor:grab;}
+  .funnel-card:active{cursor:grabbing;}
+  .funnel-card.dragging{opacity:0.4;}
+  .funnel-col.drag-over{outline:2px dashed #2563eb;background:#dbeafe !important;}
   .funnel-card .amt{font-weight:700;color:#1f2937;}
   .funnel-card .date{font-size:11px;color:#9ca3af;}
   .paid-btn{padding:3px 10px;border-radius:12px;font-size:12px;border:none;cursor:pointer;font-weight:600;}
@@ -1540,7 +1543,7 @@ function renderCRM(){
 
   let html='<div class="crm-funnel">';
   for(const s of ['new','active','done','archive']){
-    html+='<div class="funnel-col" style="background:'+colColors[s]+'">';
+    html+='<div class="funnel-col" data-status="'+s+'" style="background:'+colColors[s]+'" ondragover="kanbanDragOver(event)" ondragleave="kanbanDragLeave(event)" ondrop="kanbanDrop(event)">';
     html+='<h4>'+colTitles[s]+' ('+cols[s].length+')</h4>';
     if(cols[s].length===0) html+='<p class="kanban-hint">—</p>';
     else{
@@ -1549,17 +1552,17 @@ function renderCRM(){
         const paidBtn=e.paid?
           '<button class="paid-yes" onclick="toggleEstimatePaid('+e.id+')">✅ Опл.</button>':
           '<button class="paid-no" onclick="toggleEstimatePaid('+e.id+')">❌ Нет</button>';
-        html+='<div class="funnel-card">'+
+        html+='<div class="funnel-card" draggable="true" data-id="'+e.id+'" ondragstart="kanbanDragStart(event)" ondragend="kanbanDragEnd(event)">'+
           '<div class="top"><b>'+e.client+'</b> <span class="amt">'+e.total+'</span></div>'+
           '<div class="date">'+d+' · '+e.profileName+'</div>'+
-          '<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;">'+paidBtn+
+          '<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;align-items:center;">'+paidBtn+
           '<select class="status-select '+getStatusClass(e.status)+'" onchange="updateEstimateStatus('+e.id+',this.value)">'+
           '<option value="new" '+(e.status==='new'?'selected':'')+'>🆕 Новый</option>'+
           '<option value="active" '+(e.status==='active'?'selected':'')+'>🟠 В работе</option>'+
           '<option value="done" '+(e.status==='done'?'selected':'')+'>🟢 Готово</option>'+
           '<option value="archive" '+(e.status==='archive'?'selected':'')+'>🔴 Архив</option>'+
           '</select>'+
-          '<button class="secondary" style="font-size:12px;" onclick="loadEstimate('+e.id+')">📂</button>'+
+          '<button class="secondary" style="font-size:12px;margin-left:auto;" onclick="loadEstimate('+e.id+')">📂</button>'+
           '<button class="danger" style="font-size:12px;" onclick="deleteEstimate('+e.id+')">🗑</button>'+
           '</div></div>';
       });
@@ -1567,8 +1570,41 @@ function renderCRM(){
     html+='</div>';
   }
   html+='</div>';
+  html+='<p class="small" style="margin-top:6px;text-align:center;color:#6b7280;">💡 Перетащите карточку в другую колонку или используйте выпадающий список</p>';
   cont.innerHTML=html;
   updateCrmCounters();
+}
+
+// Минимальный drag-and-drop: перетащи карточку в другую колонку
+let _dragEstId=null;
+function kanbanDragStart(ev){
+  _dragEstId=ev.currentTarget.dataset.id;
+  ev.currentTarget.classList.add('dragging');
+  ev.dataTransfer.effectAllowed='move';
+  try{ev.dataTransfer.setData('text/plain',_dragEstId);}catch(e){}
+}
+function kanbanDragEnd(ev){
+  ev.currentTarget.classList.remove('dragging');
+}
+function kanbanDragOver(ev){
+  ev.preventDefault();
+  ev.dataTransfer.dropEffect='move';
+  ev.currentTarget.classList.add('drag-over');
+}
+function kanbanDragLeave(ev){
+  ev.currentTarget.classList.remove('drag-over');
+}
+function kanbanDrop(ev){
+  ev.preventDefault();
+  ev.currentTarget.classList.remove('drag-over');
+  const newStatus=ev.currentTarget.dataset.status;
+  const id=parseInt(_dragEstId||ev.dataTransfer.getData('text/plain'),10);
+  if(!id||!newStatus)return;
+  const e=DB.estimates.find(x=>x.id===id);
+  if(!e||e.status===newStatus)return;
+  e.status=newStatus;
+  saveDB();
+  renderCRM();
 }
 
 function updateCrmCounters(){
@@ -2359,7 +2395,7 @@ function applyTheme(t){
 })();
 
 // === Версия приложения (для отображения и кеша SW) ===
-const APP_VERSION='1.4.7';
+const APP_VERSION='1.4.8';
 console.log('Калькулятор смет PRO v'+APP_VERSION);
 
 // === DEV-режим: ?dev=1 в URL открывает все PRO-функции ===
