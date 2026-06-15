@@ -1,7 +1,7 @@
 {
-  "version": "1.4.6",
-  "changelog": "Канбан с drag-and-drop, цветные плашки статусов, защита loadEstimate от битых данных, стилизованные итоги с разбивкой по категориям",
-  "releaseDate": "2026-06-14",
+  "version": "1.4.7",
+  "changelog": "Исправлен switchTab (не переключал после loadEstimate), защита renderCalc от undefined currentState, восстановлена экранизация кавычек",
+  "releaseDate": "2026-06-15",
   "updateUrl": "",
   "minSupported": "1.0.0",
   "channel": "https://t.me/smetapro_news"
