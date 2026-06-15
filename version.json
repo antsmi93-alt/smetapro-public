@@ -1,6 +1,6 @@
 {
-  "version": "1.4.1",
-  "changelog": "Защита initSignaturePad, dev-режим ?dev=1, защита setCrmFilter, улучшенная обработка ошибок инициализации",
+  "version": "1.4.2",
+  "changelog": "Полная смета при шаринге/печати: список работ, материалов, итог. Шрифт Inter с кириллицей (нет иероглифов на Android)",
   "releaseDate": "2026-06-14",
   "updateUrl": "",
   "minSupported": "1.0.0",
