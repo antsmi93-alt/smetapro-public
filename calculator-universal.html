@@ -1593,19 +1593,77 @@ function updateCrmCounters(){
 //  ПЕЧАТЬ / ПОДЕЛИТЬСЯ
 // ═══════════════════════════════════════════════════════
 
-// === Загрузка jsPDF (CDN) с кешированием в localStorage ===
+// === Загрузка jsPDF + кириллический шрифт Roboto ===
 let _jspdfPromise=null;
+let _cyrillicFontLoaded=false;
 function loadJsPDF(){
   if(_jspdfPromise)return _jspdfPromise;
   _jspdfPromise=new Promise((resolve,reject)=>{
-    if(window.jspdf&&window.jspdf.jsPDF)return resolve(window.jspdf.jsPDF);
+    if(window.jspdf&&window.jspdf.jsPDF){
+      loadCyrillicFont(window.jspdf.jsPDF).then(()=>resolve(window.jspdf.jsPDF)).catch(()=>resolve(window.jspdf.jsPDF));
+      return;
+    }
     const s=document.createElement('script');
     s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-    s.onload=()=>{window.jspdf&&window.jspdf.jsPDF?resolve(window.jspdf.jsPDF):reject(new Error('jsPDF не загрузился'));};
+    s.onload=()=>{
+      if(window.jspdf&&window.jspdf.jsPDF){
+        loadCyrillicFont(window.jspdf.jsPDF).then(()=>resolve(window.jspdf.jsPDF)).catch(()=>resolve(window.jspdf.jsPDF));
+      }else{reject(new Error('jsPDF не загрузился'));}
+    };
     s.onerror=()=>reject(new Error('CDN недоступен (нужен интернет для PDF)'));
     document.head.appendChild(s);
   });
   return _jspdfPromise;
+}
+// Загрузка кириллического шрифта Roboto Regular (~150KB base64)
+function loadCyrillicFont(JsPDF){
+  if(_cyrillicFontLoaded)return Promise.resolve();
+  return new Promise((resolve,reject)=>{
+    // Сначала проверяем кеш localStorage
+    const cached=localStorage.getItem('jspdf_cyrillic_font_b64');
+    if(cached){
+      try{applyFont(JsPDF,cached);return resolve();}catch(e){console.warn('Кеш шрифта битый',e);}
+    }
+    // Загружаем с CDN (jsDelivr GitHub: neverov/roboto-cyrillic)
+    const url='https://cdn.jsdelivr.net/gh/google/fonts@main/apache/roboto/static/Roboto-Regular.ttf';
+    fetch(url).then(r=>{
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      return r.arrayBuffer();
+    }).then(buf=>{
+      // Конвертируем в base64 для jsPDF
+      const bytes=new Uint8Array(buf);
+      let bin='';
+      for(let i=0;i<bytes.byteLength;i++)bin+=String.fromCharCode(bytes[i]);
+      const b64=btoa(bin);
+      try{localStorage.setItem('jspdf_cyrillic_font_b64',b64);}catch(e){console.warn('localStorage full',e);}
+      applyFont(JsPDF,b64);
+      resolve();
+    }).catch(e=>{
+      console.warn('Не удалось загрузить кириллический шрифт, fallback на транслит:',e.message);
+      resolve(); // Продолжаем без шрифта, будет транслит в setLangMixin
+    });
+  });
+}
+function applyFont(JsPDF,b64){
+  JsPDF.API.events.push(['addFonts',()=>{
+    JsPDF.API.addFileToVFS('Roboto-Regular.ttf',b64);
+    JsPDF.API.addFont('Roboto-Regular.ttf','Roboto','normal');
+  }]);
+  // Сразу применяем
+  JsPDF.API.addFileToVFS('Roboto-Regular.ttf',b64);
+  JsPDF.API.addFont('Roboto-Regular.ttf','Roboto','normal');
+  _cyrillicFontLoaded=true;
+  console.log('✓ Кириллический шрифт Roboto загружен в jsPDF');
+}
+// Транслитерация для фолбэка (если шрифт не загрузился)
+function toLat(s){
+  const map={'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'e','ж':'zh','з':'z','и':'i','й':'i','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'h','ц':'ts','ч':'ch','ш':'sh','щ':'sch','ъ':'','ы':'y','ь':'','э':'e','ю':'yu','я':'ya'};
+  return (s||'').split('').map(c=>{const l=c.toLowerCase();const m=map[l];return m?(c===l?m:m.charAt(0).toUpperCase()+m.slice(1)):c;}).join('');
+}
+// Безопасный вывод строки в PDF (с шрифтом или транслитом)
+function pdfStr(s,useTranslit){
+  if(_cyrillicFontLoaded&&!useTranslit)return s;
+  return toLat(s);
 }
 
 async function printEstimate(){
@@ -1628,22 +1686,22 @@ async function printEstimate(){
     const JsPDF=await Promise.race([loadJsPDF(),new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),3000))]);
     const doc=new JsPDF({unit:'mm',format:'a4'});
     // Шапка (на русском)
-    doc.setFont('helvetica','bold');doc.setFontSize(18);
-    doc.text('SMETA — '+client,15,18);
-    doc.setFont('helvetica','normal');doc.setFontSize(10);
-    doc.text('Профиль: '+p.name,15,25);
-    if(notes)doc.text('Примечание: '+notes.slice(0,200),15,30);
+    doc.setFont(_cyrillicFontLoaded?'Roboto':'helvetica','bold');doc.setFontSize(18);
+    doc.text('SMETA — '+pdfStr(client),15,18);
+    doc.setFont(_cyrillicFontLoaded?'Roboto':'helvetica','normal');doc.setFontSize(10);
+    doc.text('Профиль: '+pdfStr(p.name),15,25);
+    if(notes)doc.text('Примечание: '+pdfStr(notes.slice(0,200)),15,30);
     doc.text('Дата: '+new Date().toLocaleDateString('ru-RU'),15,35);
     // Таблица работ
     let y=45;
-    doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text('РАБОТЫ',15,y);y+=6;
-    doc.setFont('helvetica','normal');doc.setFontSize(9);
+    doc.setFont(_cyrillicFontLoaded?'Roboto':'helvetica','bold');doc.setFontSize(12);doc.text('РАБОТЫ',15,y);y+=6;
+    doc.setFont(_cyrillicFontLoaded?'Roboto':'helvetica','normal');doc.setFontSize(9);
     doc.text('№',15,y);doc.text('Наименование',22,y);doc.text('Кол-во',115,y);doc.text('Ед.',130,y);doc.text('Цена',145,y);doc.text('Сумма',170,y);y+=5;
-    works.forEach((w,i)=>{doc.text(String(i+1),15,y);doc.text(w.name.slice(0,42),22,y);doc.text(String(w.qty),115,y);doc.text(w.unit,130,y);doc.text(String(w.price)+' руб',145,y);doc.text(String(w.sum)+' руб',170,y);y+=5;if(y>270){doc.addPage();y=20;}});
-    y+=3;doc.setFont('helvetica','bold');doc.text('Итого работы: '+wSum+' руб',15,y);y+=8;
-    if(mats.length){doc.setFontSize(12);doc.text('МАТЕРИАЛЫ',15,y);y+=6;doc.setFontSize(9);doc.setFont('helvetica','normal');mats.forEach((m,i)=>{doc.text(String(i+1),15,y);doc.text(m.name.slice(0,42),22,y);doc.text(String(m.qty),115,y);doc.text(m.unit,130,y);doc.text(String(m.price)+' руб',145,y);doc.text(String(m.sum)+' руб',170,y);y+=5;if(y>270){doc.addPage();y=20;}});y+=3;doc.setFont('helvetica','bold');doc.text('Итого материалы: '+mSum+' руб',15,y);y+=8;}
-    if(disc||markup){doc.setFont('helvetica','normal');doc.text('Скидка: '+disc+'%   Наценка: '+markup+'%',15,y);y+=6;}
-    doc.setFontSize(14);doc.setFont('helvetica','bold');doc.text('ИТОГО: '+total.toLocaleString('ru-RU')+' руб',15,y+5);
+    works.forEach((w,i)=>{doc.text(String(i+1),15,y);doc.text(pdfStr(w.name.slice(0,42)),22,y);doc.text(String(w.qty),115,y);doc.text(pdfStr(w.unit),130,y);doc.text(String(w.price)+' rub',145,y);doc.text(String(w.sum)+' rub',170,y);y+=5;if(y>270){doc.addPage();y=20;}});
+    y+=3;doc.setFont(_cyrillicFontLoaded?'Roboto':'helvetica','bold');doc.text('Итого работы: '+wSum+' rub',15,y);y+=8;
+    if(mats.length){doc.setFontSize(12);doc.text('МАТЕРИАЛЫ',15,y);y+=6;doc.setFontSize(9);doc.setFont(_cyrillicFontLoaded?'Roboto':'helvetica','normal');mats.forEach((m,i)=>{doc.text(String(i+1),15,y);doc.text(pdfStr(m.name.slice(0,42)),22,y);doc.text(String(m.qty),115,y);doc.text(pdfStr(m.unit),130,y);doc.text(String(m.price)+' rub',145,y);doc.text(String(m.sum)+' rub',170,y);y+=5;if(y>270){doc.addPage();y=20;}});y+=3;doc.setFont(_cyrillicFontLoaded?'Roboto':'helvetica','bold');doc.text('Итого материалы: '+mSum+' rub',15,y);y+=8;}
+    if(disc||markup){doc.setFont(_cyrillicFontLoaded?'Roboto':'helvetica','normal');doc.text('Скидка: '+disc+'%   Наценка: '+markup+'%',15,y);y+=6;}
+    doc.setFontSize(14);doc.setFont(_cyrillicFontLoaded?'Roboto':'helvetica','bold');doc.text('ИТОГО: '+total.toLocaleString('ru-RU')+' rub',15,y+5);
     // Сохранение
     const fname='smeta-'+(client.replace(/[^\wа-яё]/gi,'_')||'client')+'-'+new Date().toISOString().slice(0,10)+'.pdf';
     doc.save(fname);
@@ -2235,7 +2293,7 @@ function applyTheme(t){
 })();
 
 // === Версия приложения (для отображения и кеша SW) ===
-const APP_VERSION='1.4.3';
+const APP_VERSION='1.4.4';
 console.log('Калькулятор смет PRO v'+APP_VERSION);
 
 // === DEV-режим: ?dev=1 в URL открывает все PRO-функции ===
