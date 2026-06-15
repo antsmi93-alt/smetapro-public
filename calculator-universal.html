@@ -1043,7 +1043,9 @@ let _sigPad=null;
 function initSignaturePad(){
   const canvas=document.getElementById('sigCanvas');
   if(!canvas||_sigPad)return;
-  _sigPad={canvas,ctx:canvas.getContext('2d'),drawing:false,lastX:0,lastY:0};
+  const ctx=canvas.getContext('2d');
+  if(!ctx)return; // браузер без canvas или ошибка — не падаем
+  _sigPad={canvas,ctx,drawing:false,lastX:0,lastY:0};
   function getPos(e){
     const r=canvas.getBoundingClientRect();
     const t=e.touches?e.touches[0]:e;
@@ -1969,11 +1971,11 @@ function renderProPage(){
 // === Запуск приложения (защищён от ошибок) ===
 try{
   maybeCreateDemo();
-  initSignaturePad();
+  try{initSignaturePad();}catch(e){console.warn('initSignaturePad:',e.message);}
   populateProfiles();
   updateUIState();
   renderCalc();
-  startReminderPoll();
+  try{startReminderPoll();}catch(e){console.warn('startReminderPoll:',e.message);}
   console.log('✓ Инициализация завершена');
 }catch(err){
   console.error('✗ Ошибка инициализации:',err);
@@ -2078,8 +2080,19 @@ function applyTheme(t){
 })();
 
 // === Версия приложения (для отображения и кеша SW) ===
-const APP_VERSION='1.4.0';
+const APP_VERSION='1.4.1';
 console.log('Калькулятор смет PRO v'+APP_VERSION);
+
+// === DEV-режим: ?dev=1 в URL открывает все PRO-функции ===
+if(new URLSearchParams(location.search).get('dev')==='1'){
+  try{
+    if(!DB.usage)DB.usage={};
+    DB.usage.isPro=true;
+    DB.usage.proExpiry=Date.now()+365*86400*1000;
+    saveDB();
+    console.log('⚙️ DEV-режим: PRO включён принудительно');
+  }catch(e){console.warn('DEV-режим: не удалось',e);}
+}
 
 // === Проверка обновлений (раз в час) ===
 async function checkUpdates(){
