@@ -1679,62 +1679,128 @@ async function printEstimate(){
   const disc=parseFloat(document.getElementById('discount').value)||0;
   const markup=parseFloat(document.getElementById('markup').value)||0;
   const total=Math.round((wSum+mSum)*(1-disc/100)*(1+markup/100));
-
-  // Попытка jsPDF (только если есть интернет)
-  let pdfOk=false;
-  try{
-    const JsPDF=await Promise.race([loadJsPDF(),new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),3000))]);
-    const doc=new JsPDF({unit:'mm',format:'a4'});
-    // Шапка (на русском)
-    doc.setFont(_cyrillicFontLoaded?'Roboto':'helvetica','bold');doc.setFontSize(18);
-    doc.text('SMETA — '+pdfStr(client),15,18);
-    doc.setFont(_cyrillicFontLoaded?'Roboto':'helvetica','normal');doc.setFontSize(10);
-    doc.text('Профиль: '+pdfStr(p.name),15,25);
-    if(notes)doc.text('Примечание: '+pdfStr(notes.slice(0,200)),15,30);
-    doc.text('Дата: '+new Date().toLocaleDateString('ru-RU'),15,35);
-    // Таблица работ
-    let y=45;
-    doc.setFont(_cyrillicFontLoaded?'Roboto':'helvetica','bold');doc.setFontSize(12);doc.text('РАБОТЫ',15,y);y+=6;
-    doc.setFont(_cyrillicFontLoaded?'Roboto':'helvetica','normal');doc.setFontSize(9);
-    doc.text('№',15,y);doc.text('Наименование',22,y);doc.text('Кол-во',115,y);doc.text('Ед.',130,y);doc.text('Цена',145,y);doc.text('Сумма',170,y);y+=5;
-    works.forEach((w,i)=>{doc.text(String(i+1),15,y);doc.text(pdfStr(w.name.slice(0,42)),22,y);doc.text(String(w.qty),115,y);doc.text(pdfStr(w.unit),130,y);doc.text(String(w.price)+' rub',145,y);doc.text(String(w.sum)+' rub',170,y);y+=5;if(y>270){doc.addPage();y=20;}});
-    y+=3;doc.setFont(_cyrillicFontLoaded?'Roboto':'helvetica','bold');doc.text('Итого работы: '+wSum+' rub',15,y);y+=8;
-    if(mats.length){doc.setFontSize(12);doc.text('МАТЕРИАЛЫ',15,y);y+=6;doc.setFontSize(9);doc.setFont(_cyrillicFontLoaded?'Roboto':'helvetica','normal');mats.forEach((m,i)=>{doc.text(String(i+1),15,y);doc.text(pdfStr(m.name.slice(0,42)),22,y);doc.text(String(m.qty),115,y);doc.text(pdfStr(m.unit),130,y);doc.text(String(m.price)+' rub',145,y);doc.text(String(m.sum)+' rub',170,y);y+=5;if(y>270){doc.addPage();y=20;}});y+=3;doc.setFont(_cyrillicFontLoaded?'Roboto':'helvetica','bold');doc.text('Итого материалы: '+mSum+' rub',15,y);y+=8;}
-    if(disc||markup){doc.setFont(_cyrillicFontLoaded?'Roboto':'helvetica','normal');doc.text('Скидка: '+disc+'%   Наценка: '+markup+'%',15,y);y+=6;}
-    doc.setFontSize(14);doc.setFont(_cyrillicFontLoaded?'Roboto':'helvetica','bold');doc.text('ИТОГО: '+total.toLocaleString('ru-RU')+' rub',15,y+5);
-    // Сохранение
-    const fname='smeta-'+(client.replace(/[^\wа-яё]/gi,'_')||'client')+'-'+new Date().toISOString().slice(0,10)+'.pdf';
-    doc.save(fname);
-    pdfOk=true;
-  }catch(err){
-    console.warn('jsPDF failed, fallback to print',err);
-  }
-  if(pdfOk)return;
-  // Fallback: HTML-окно с print
+  // Замеры
+  const mL=parseFloat(document.getElementById('mLength')?.value)||0;
+  const mW=parseFloat(document.getElementById('mWidth')?.value)||0;
+  const mH=parseFloat(document.getElementById('mHeight')?.value)||0;
+  // Открываем HTML-окно для печати (там кириллица работает сразу)
   const w=window.open('','_blank');
   if(!w){alert('Не удалось открыть окно для печати. Разрешите всплывающие окна.');return;}
-  let html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Смета — '+client+'</title><style>body{font-family:-apple-system,sans-serif;max-width:700px;margin:20px auto;padding:0 16px;color:#1f2937;}h1{color:#1e3a8a;border-bottom:2px solid #1e3a8a;padding-bottom:8px;}table{width:100%;border-collapse:collapse;margin:14px 0;}th,td{padding:8px;border-bottom:1px solid #e5e7eb;text-align:left;font-size:14px;}th{background:#f0f2f5;font-weight:600;}tfoot td{font-weight:700;font-size:16px;background:#fef3c7;}.total{background:#1e3a8a;color:#fff;padding:14px;border-radius:8px;text-align:center;font-size:20px;font-weight:700;margin:14px 0;}</style></head><body>';
-  html+='<h1>📋 Смета</h1>';
-  html+='<p><b>Клиент:</b> '+client+'<br><b>Профиль:</b> '+p.name+'<br><b>Дата:</b> '+new Date().toLocaleString('ru-RU')+'</p>';
-  if(notes)html+='<p><b>Примечания:</b><br>'+notes.replace(/\n/g,'<br>')+'</p>';
+  // Форматтеры
+  const fmt=n=>Number(n).toLocaleString('ru-RU',{maximumFractionDigits:2});
+  const fmtInt=n=>Math.round(Number(n)).toLocaleString('ru-RU');
+  // Сборка HTML — Excel-style таблица
+  const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  let html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Смета — '+esc(client)+'</title>';
+  html+='<style>';
+  html+='@page{size:A4;margin:14mm;}';
+  html+='*{box-sizing:border-box;}';
+  html+='body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Roboto",Arial,sans-serif;max-width:210mm;margin:0 auto;padding:0;color:#000;font-size:12px;line-height:1.4;}';
+  html+='.header{border-bottom:3px solid #1e3a8a;padding-bottom:10px;margin-bottom:14px;}';
+  html+='h1{color:#1e3a8a;margin:0 0 6px 0;font-size:22px;}';
+  html+='.info{font-size:11px;color:#374151;line-height:1.6;}';
+  html+='.info b{color:#1f2937;}';
+  html+='.measure-box{background:#eff6ff;border:1px solid #93c5fd;padding:8px 12px;margin:10px 0;border-radius:4px;font-size:11px;}';
+  html+='.measure-box b{color:#1e40af;font-size:13px;}';
+  html+='h2{background:#1e3a8a;color:#fff;padding:6px 10px;margin:14px 0 0 0;font-size:13px;font-weight:600;}';
+  html+='table{width:100%;border-collapse:collapse;margin:0;font-size:11px;}';
+  html+='th,td{border:1px solid #9ca3af;padding:5px 6px;text-align:left;vertical-align:top;}';
+  html+='th{background:#e5e7eb;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:0.3px;}';
+  html+='td.num,th.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;}';
+  html+='td.center{text-align:center;}';
+  html+='tr.alt{background:#f9fafb;}';
+  html+='tfoot td{background:#fef3c7;font-weight:700;font-size:12px;border-top:2px solid #1e3a8a;}';
+  html+='.summary{background:#1e3a8a;color:#fff;padding:12px;margin-top:14px;font-size:13px;}';
+  html+='.summary table{color:#000;background:#fff;margin-top:6px;}';
+  html+='.summary .row{display:flex;justify-content:space-between;padding:3px 0;}';
+  html+='.summary .total{font-size:18px;font-weight:700;background:#fbbf24;color:#1f2937;padding:8px 12px;margin-top:8px;border-radius:4px;text-align:center;}';
+  html+='.footer{margin-top:18px;font-size:9.5px;color:#6b7280;text-align:center;border-top:1px solid #e5e7eb;padding-top:8px;}';
+  html+='@media print{body{font-size:10.5px;}.no-print{display:none;}}';
+  html+='</style></head><body>';
+
+  // Шапка
+  html+='<div class="header">';
+  html+='<h1>📋 СМЕТА №'+Date.now().toString().slice(-6)+'</h1>';
+  html+='<div class="info">';
+  html+='<b>Клиент / Объект:</b> '+esc(client)+'<br>';
+  html+='<b>Профиль работ:</b> '+esc(p.name)+'<br>';
+  html+='<b>Дата составления:</b> '+new Date().toLocaleString('ru-RU')+'<br>';
+  if(notes)html+='<b>Примечания:</b> '+esc(notes).replace(/\n/g,'<br>');
+  html+='</div></div>';
+
+  // Замеры
+  if(mL>0&&mW>0){
+    html+='<div class="measure-box">';
+    html+='<b>📐 Замеры помещения:</b> '+mL+' м × '+mW+' м'+(mH>0?' × '+mH+' м':'')+' = ';
+    html+='<b style="font-size:14px;">S = '+fmt(mL*mW)+' м²</b>';
+    if(mH>0)html+=' &nbsp;|&nbsp; <b style="font-size:14px;">V = '+fmt(mL*mW*mH)+' м³</b>';
+    html+='</div>';
+  }
+
+  // Таблица работ (Excel-style)
   if(works.length){
-    html+='<h2>Работы</h2><table><thead><tr><th>№</th><th>Наименование</th><th>Кол-во</th><th>Ед.</th><th>Цена</th><th>Сумма</th></tr></thead><tbody>';
-    works.forEach((w,i)=>{html+=`<tr><td>${i+1}</td><td>${w.name}</td><td>${w.qty}</td><td>${w.unit}</td><td>${w.price} ₽</td><td>${w.sum} ₽</td></tr>`;});
-    html+=`</tbody><tfoot><tr><td colspan="5">Итого работы:</td><td>${wSum} ₽</td></tr></tfoot></table>`;
+    html+='<h2>1. РАБОТЫ</h2>';
+    html+='<table><thead><tr>';
+    html+='<th class="center" style="width:30px;">№</th>';
+    html+='<th>Наименование работы</th>';
+    html+='<th class="num" style="width:55px;">Кол-во</th>';
+    html+='<th class="center" style="width:45px;">Ед.</th>';
+    html+='<th class="num" style="width:75px;">Цена за ед.</th>';
+    html+='<th class="num" style="width:85px;">Стоимость</th>';
+    html+='</tr></thead><tbody>';
+    works.forEach((w,i)=>{
+      const altClass=i%2===1?' class="alt"':'';
+      html+=`<tr${altClass}><td class="center">${i+1}</td><td>${esc(w.name)}</td><td class="num">${fmt(w.qty)}</td><td class="center">${esc(w.unit)}</td><td class="num">${fmtInt(w.price)} ₽</td><td class="num">${fmtInt(w.sum)} ₽</td></tr>`;
+    });
+    html+='</tbody><tfoot><tr><td colspan="5" style="text-align:right;">ИТОГО работы:</td><td class="num">'+fmtInt(wSum)+' ₽</td></tr></tfoot></table>';
   }
+
+  // Таблица материалов
   if(mats.length){
-    html+='<h2>Материалы</h2><table><thead><tr><th>№</th><th>Наименование</th><th>Кол-во</th><th>Ед.</th><th>Цена</th><th>Сумма</th></tr></thead><tbody>';
-    mats.forEach((m,i)=>{html+=`<tr><td>${i+1}</td><td>${m.name}</td><td>${m.qty}</td><td>${m.unit}</td><td>${m.price} ₽</td><td>${m.sum} ₽</td></tr>`;});
-    html+=`</tbody><tfoot><tr><td colspan="5">Итого материалы:</td><td>${mSum} ₽</td></tr></tfoot></table>`;
+    html+='<h2>2. МАТЕРИАЛЫ</h2>';
+    html+='<table><thead><tr>';
+    html+='<th class="center" style="width:30px;">№</th>';
+    html+='<th>Наименование материала</th>';
+    html+='<th class="num" style="width:55px;">Кол-во</th>';
+    html+='<th class="center" style="width:45px;">Ед.</th>';
+    html+='<th class="num" style="width:75px;">Цена за ед.</th>';
+    html+='<th class="num" style="width:85px;">Стоимость</th>';
+    html+='</tr></thead><tbody>';
+    mats.forEach((m,i)=>{
+      const altClass=i%2===1?' class="alt"':'';
+      html+=`<tr${altClass}><td class="center">${i+1}</td><td>${esc(m.name)}</td><td class="num">${fmt(m.qty)}</td><td class="center">${esc(m.unit)}</td><td class="num">${fmtInt(m.price)} ₽</td><td class="num">${fmtInt(m.sum)} ₽</td></tr>`;
+    });
+    html+='</tbody><tfoot><tr><td colspan="5" style="text-align:right;">ИТОГО материалы:</td><td class="num">'+fmtInt(mSum)+' ₽</td></tr></tfoot></table>';
   }
-  if(disc||markup)html+=`<p>Скидка: ${disc}% · Наценка: ${markup}%</p>`;
-  html+=`<div class="total">ИТОГО: ${total.toLocaleString('ru-RU')} ₽</div>`;
-  if(objectPhotos.length)html+=`<p>📷 Фото объекта: ${objectPhotos.length} шт. (в архиве сметы)</p>`;
-  if(receiptPhotos.length)html+=`<p>🧾 Чеки: ${receiptPhotos.length} шт. (в архиве сметы)</p>`;
-  html+='<p style="margin-top:30px;font-size:12px;color:#6b7280;">Смета сформирована Калькулятором смет PRO · '+new Date().toLocaleString('ru-RU')+'</p>';
-  html+='<scr'+'ipt>setTimeout(()=>window.print(),300);</scr'+'ipt>';
+
+  // Итоговый расчёт
+  html+='<div class="summary">';
+  html+='<b style="font-size:14px;">📊 СВОДНЫЙ РАСЧЁТ:</b>';
+  html+='<table style="margin-top:6px;"><tr><td style="border:none;padding:3px;">Работы:</td><td class="num" style="border:none;padding:3px;">'+fmtInt(wSum)+' ₽</td></tr>';
+  html+='<tr><td style="border:none;padding:3px;">Материалы:</td><td class="num" style="border:none;padding:3px;">'+fmtInt(mSum)+' ₽</td></tr>';
+  html+='<tr><td style="border:none;padding:3px;">Подитог:</td><td class="num" style="border:none;padding:3px;">'+fmtInt(wSum+mSum)+' ₽</td></tr>';
+  if(disc)html+='<tr><td style="border:none;padding:3px;">Скидка ('+disc+'%):</td><td class="num" style="border:none;padding:3px;">−'+fmtInt((wSum+mSum)*disc/100)+' ₽</td></tr>';
+  if(markup)html+='<tr><td style="border:none;padding:3px;">Наценка ('+markup+'%):</td><td class="num" style="border:none;padding:3px;">+'+fmtInt((wSum+mSum)*(1-disc/100)*markup/100)+' ₽</td></tr>';
+  html+='</table>';
+  html+='<div class="total">ИТОГО К ОПЛАТЕ: '+fmtInt(total)+' ₽</div>';
+  if(mL>0&&mW>0)html+='<div style="margin-top:8px;font-size:11px;text-align:center;">Стоимость за 1 м²: <b>'+fmtInt(total/(mL*mW))+' ₽/м²</b>'+(mH>0?' &nbsp;|&nbsp; за 1 м³: <b>'+fmtInt(total/(mL*mW*mH))+' ₽/м³</b>':'')+'</div>';
+  html+='</div>';
+
+  // Подвал
+  html+='<div class="footer">';
+  html+='Смета сформирована Калькулятором смет PRO · '+new Date().toLocaleString('ru-RU')+'<br>';
+  html+='Документ действителен без печати и подписи. Срок действия сметы: 14 дней.';
+  if(objectPhotos.length)html+='<br>📷 Фото объекта: '+objectPhotos.length+' шт. (в архиве сметы)';
+  if(receiptPhotos.length)html+=' &nbsp;|&nbsp; 🧾 Чеки: '+receiptPhotos.length+' шт.';
+  html+='</div>';
+
+  // Кнопка «Сохранить как PDF» (только для экрана, не для печати)
+  html+='<div class="no-print" style="position:fixed;top:10px;right:10px;background:#1e3a8a;color:#fff;padding:8px 14px;border-radius:6px;font-size:13px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.2);" onclick="window.print()">🖨 Распечатать / Сохранить PDF</div>';
+  html+='</body></html>';
   w.document.write(html);
   w.document.close();
+  // Автопечать через секунду (даём браузеру отрисовать)
+  w.setTimeout(()=>{try{w.print();}catch(e){console.warn(e);}},800);
 }
 function shareEstimate(){
   const client=document.getElementById('clientName').value.trim()||'Клиент';
@@ -2293,7 +2359,7 @@ function applyTheme(t){
 })();
 
 // === Версия приложения (для отображения и кеша SW) ===
-const APP_VERSION='1.4.4';
+const APP_VERSION='1.4.5';
 console.log('Калькулятор смет PRO v'+APP_VERSION);
 
 // === DEV-режим: ?dev=1 в URL открывает все PRO-функции ===
