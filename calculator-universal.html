@@ -193,6 +193,46 @@
       <label>Клиент / Объект</label>
       <input type="text" id="clientName" placeholder="Иванов, ул. Ленина 15, кв 3">
 
+      <!-- ЗАМЕРЫ ПОМЕЩЕНИЯ: авто-расчёт площади и объёма -->
+      <div class="card" id="measureCard" style="margin-top:10px;background:linear-gradient(135deg,#eff6ff 0%,#f0f9ff 100%);border-left:3px solid #2563eb;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+          <span style="font-size:18px;">📐</span>
+          <b style="color:#1e3a8a;">Замеры помещения</b>
+          <span class="hint" style="font-size:11px;color:#6b7280;margin-left:auto;">авто-расчёт S и V</span>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1;">
+            <label style="font-size:12px;">Длина, м</label>
+            <input type="number" step="0.01" min="0" id="mLength" placeholder="5.0" style="width:100%;padding:8px;font-size:15px;" oninput="calcMeasure()">
+          </div>
+          <div style="flex:1;">
+            <label style="font-size:12px;">Ширина, м</label>
+            <input type="number" step="0.01" min="0" id="mWidth" placeholder="4.0" style="width:100%;padding:8px;font-size:15px;" oninput="calcMeasure()">
+          </div>
+          <div style="flex:1;">
+            <label style="font-size:12px;">Высота, м <span style="color:#9ca3af;">(опц.)</span></label>
+            <input type="number" step="0.01" min="0" id="mHeight" placeholder="2.7" style="width:100%;padding:8px;font-size:15px;" oninput="calcMeasure()">
+          </div>
+        </div>
+        <div id="measureResults" style="margin-top:10px;padding:10px;background:#fff;border-radius:6px;display:none;">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+            <div>
+              <span style="font-size:11px;color:#6b7280;">Площадь S:</span>
+              <b id="mArea" style="color:#059669;font-size:18px;margin-left:4px;">0</b>
+              <span style="color:#6b7280;font-size:13px;"> м²</span>
+              <button type="button" class="secondary" style="font-size:11px;padding:2px 8px;margin-left:6px;" onclick="copyMeasureToWork('area')" title="Подставить в кол-во выбранной работы">↪ в кол-во</button>
+            </div>
+            <div id="mVolumeRow" style="display:none;">
+              <span style="font-size:11px;color:#6b7280;">Объём V:</span>
+              <b id="mVolume" style="color:#2563eb;font-size:18px;margin-left:4px;">0</b>
+              <span style="color:#6b7280;font-size:13px;"> м³</span>
+              <button type="button" class="secondary" style="font-size:11px;padding:2px 8px;margin-left:6px;" onclick="copyMeasureToWork('volume')" title="Подставить в кол-во выбранной работы">↪ в кол-во</button>
+            </div>
+          </div>
+        </div>
+        <div id="measureHint" style="margin-top:6px;font-size:11px;color:#9ca3af;">Введите длину и ширину → увидите площадь. Добавьте высоту → появится объём.</div>
+      </div>
+
       <label>Замеры и примечания</label>
       <textarea id="estimateNotes" rows="3" placeholder="Высота потолков 2.7м, стены кривые..."></textarea>
 
@@ -1241,6 +1281,62 @@ function calcTotals(){
 //  СОХРАНЕНИЕ СМЕТЫ
 // ═══════════════════════════════════════════════════════
 
+// === Замеры помещения: авто-расчёт S и V ===
+function calcMeasure(){
+  const L=parseFloat(document.getElementById('mLength')?.value)||0;
+  const W=parseFloat(document.getElementById('mWidth')?.value)||0;
+  const H=parseFloat(document.getElementById('mHeight')?.value)||0;
+  const resBox=document.getElementById('measureResults');
+  const hint=document.getElementById('measureHint');
+  if(L>0&&W>0){
+    const S=L*W;
+    document.getElementById('mArea').textContent=S.toFixed(2);
+    resBox.style.display='block';
+    hint.textContent='Площадь: '+S.toFixed(2)+' м²';
+    if(H>0){
+      const V=L*W*H;
+      document.getElementById('mVolume').textContent=V.toFixed(2);
+      document.getElementById('mVolumeRow').style.display='block';
+      hint.textContent='Площадь: '+S.toFixed(2)+' м² · Объём: '+V.toFixed(2)+' м³';
+    }else{
+      document.getElementById('mVolumeRow').style.display='none';
+    }
+  }else{
+    resBox.style.display='none';
+    hint.textContent='Введите длину и ширину → увидите площадь. Добавьте высоту → появится объём.';
+  }
+}
+
+function copyMeasureToWork(what){
+  // Берём выбранную (отмеченную галочкой) работу и подставляем S или V в её кол-во
+  const L=parseFloat(document.getElementById('mLength')?.value)||0;
+  const W=parseFloat(document.getElementById('mWidth')?.value)||0;
+  const H=parseFloat(document.getElementById('mHeight')?.value)||0;
+  if(L<=0||W<=0){alert('Сначала введите замеры');return;}
+  const value=what==='area'?L*W:L*W*H;
+  if(what==='volume'&&H<=0){alert('Для объёма нужна высота');return;}
+  // Найдём все отмеченные чекбоксы в renderCalc
+  const p=getProfile(currentProfile);
+  if(!p)return;
+  let count=0;
+  p.works.forEach(w=>{
+    const cb=document.getElementById('cb_'+cssId(w.name));
+    if(cb&&cb.checked){
+      currentState[w.name]=value;
+      count++;
+    }
+  });
+  if(count===0){
+    alert('Поставьте галочку на работе, в которую подставить кол-во');
+    return;
+  }
+  calcTotals();renderCalc();
+  alert('✓ Подставлено: '+value.toFixed(2)+(what==='area'?' м²':' м³')+' в '+count+' работ(ы)');
+}
+
+// Безопасный ID из имени работы (для чекбоксов)
+function cssId(s){return (s||'').replace(/[^a-zA-Z0-9а-яёА-ЯЁ]/g,'_');}
+
 async function saveEstimate(){
   const isPro=DB.usage.isPro;
   if(!isPro&&DB.usage.savedCount>=3){
@@ -1251,6 +1347,16 @@ async function saveEstimate(){
   if(!p)return;
   const client=document.getElementById('clientName').value.trim()||'Клиент';
   const notes=document.getElementById('estimateNotes').value;
+  // Замеры помещения
+  const measure={
+    L:parseFloat(document.getElementById('mLength')?.value)||0,
+    W:parseFloat(document.getElementById('mWidth')?.value)||0,
+    H:parseFloat(document.getElementById('mHeight')?.value)||0
+  };
+  if(measure.L>0||measure.W>0){
+    measure.S=measure.L*measure.W;
+    if(measure.H>0)measure.V=measure.L*measure.W*measure.H;
+  }
   const works=[];p.works.forEach(w=>{const q=currentState[w.name]||0;if(q>0)works.push({name:w.name,qty:q,unit:w.unit,price:w.price,sum:q*w.price});});
   const mats=[];DB.mats.forEach((m,i)=>{const q=currentState['_mat_'+i]||0;if(q>0)mats.push({name:m.name,qty:q,unit:m.unit,price:m.price,sum:q*m.price});});
   if(works.length===0&&mats.length===0&&objectPhotos.length===0){alert('Смета пуста.');return;}
@@ -1294,6 +1400,7 @@ async function saveEstimate(){
     total:document.getElementById('finalResult').textContent,notes,
     agreedDate:document.getElementById('agreedDate')?.value||'',
     agreedTime:document.getElementById('agreedTime')?.value||'',
+    measure:measure.L>0?measure:null,
     objectPhotos:finalObject,receiptPhotos:finalReceipt,
     signature:sigKey,
     status:'new',paid:false,totalNum:Math.round(parseFloat(document.getElementById('finalResult').textContent.replace(/\s/g,'').replace('₽',''))||0)
@@ -1318,8 +1425,9 @@ function renderEstimates(){
     const d=new Date(e.date).toLocaleString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
     const photoInfo=(e.objectPhotos?.length||0)+(e.receiptPhotos?.length||0)>0 ? ' <span class="badge">📷 '+(e.objectPhotos?.length||0+e.receiptPhotos?.length||0)+'</span>' : '';
     const timeInfo=e.agreedDate ? ' <span class="chip warn">📅 ' + e.agreedDate + (e.agreedTime ? ' ' + e.agreedTime : '') + '</span>' : '';
+    const measureInfo=e.measure && e.measure.L>0 ? ' <span class="chip" style="background:#dbeafe;color:#1e40af;">📐 '+(e.measure.S?e.measure.S.toFixed(1)+' м²':'')+(e.measure.V?' / '+e.measure.V.toFixed(1)+' м³':'')+'</span>' : '';
     html+='<div class="estimate-item">'+
-      '<div class="top"><span class="client">'+e.client+'</span> <span class="chip accent">'+e.profileName+'</span>'+photoInfo+timeInfo+'</div>'+
+      '<div class="top"><span class="client">'+e.client+'</span> <span class="chip accent">'+e.profileName+'</span>'+photoInfo+timeInfo+measureInfo+'</div>'+
       '<div class="date">'+d+' → '+e.total+'</div>'+
       '<div style="margin-top:6px;"><button class="secondary" style="width:auto;padding:5px 10px;font-size:12px;margin-top:0;display:inline-block" onclick="loadEstimate('+e.id+')">📂 Открыть</button> <button class="danger" style="width:auto;padding:5px 10px;font-size:12px;margin-top:0;display:inline-block" onclick="deleteEstimate('+e.id+')">🗑</button></div>'+
     '</div>';
@@ -1335,6 +1443,11 @@ async function loadEstimate(id){
     document.getElementById('estimateNotes').value=e.notes||'';
     if(document.getElementById('agreedDate'))document.getElementById('agreedDate').value=e.agreedDate||'';
     if(document.getElementById('agreedTime'))document.getElementById('agreedTime').value=e.agreedTime||'';
+    // Замеры
+    if(document.getElementById('mLength'))document.getElementById('mLength').value=e.measure?.L||'';
+    if(document.getElementById('mWidth'))document.getElementById('mWidth').value=e.measure?.W||'';
+    if(document.getElementById('mHeight'))document.getElementById('mHeight').value=e.measure?.H||'';
+    calcMeasure();
     // Сначала находим профиль, потом populate (чтобы select знал все варианты)
     const profMatch=DB.profiles.find(p=>p.name===e.profileName);
     if(profMatch)currentProfile=profMatch.id;
@@ -1594,6 +1707,13 @@ function shareEstimate(){
     text+='Итого материалы: '+mSum.toLocaleString('ru-RU')+' ₽\n';
   }
   if(disc||markup)text+='\nСкидка: '+disc+'% · Наценка: '+markup+'%\n';
+  // Замеры (если есть)
+  const mL=parseFloat(document.getElementById('mLength')?.value)||0;
+  const mW=parseFloat(document.getElementById('mWidth')?.value)||0;
+  const mH=parseFloat(document.getElementById('mHeight')?.value)||0;
+  if(mL>0&&mW>0){
+    text+='\n📐 Замеры: '+mL+' × '+mW+(mH>0?' × '+mH+' м':'')+' → S='+(mL*mW).toFixed(2)+' м²'+(mH>0?(', V='+(mL*mW*mH).toFixed(2)+' м³'):'');
+  }
   text+='\n💰 ИТОГО: '+total.toLocaleString('ru-RU')+' ₽';
   if(navigator.share){navigator.share({title:'Смета для '+client,text:text}).catch(()=>{});}
   else if(navigator.clipboard){
@@ -2115,7 +2235,7 @@ function applyTheme(t){
 })();
 
 // === Версия приложения (для отображения и кеша SW) ===
-const APP_VERSION='1.4.2';
+const APP_VERSION='1.4.3';
 console.log('Калькулятор смет PRO v'+APP_VERSION);
 
 // === DEV-режим: ?dev=1 в URL открывает все PRO-функции ===
