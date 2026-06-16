@@ -117,14 +117,31 @@
   .locked::after{content:"🔒";position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:18px;}
   .feature-list{text-align:left;margin-top:10px;}
   .feature-list li{margin:6px 0;font-size:14px;}
-  .funnel-card{background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:8px;margin-bottom:6px;font-size:13px;cursor:grab;}
+  .funnel-card{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:8px;margin-bottom:6px;font-size:13px;cursor:grab;box-shadow:0 1px 2px rgba(0,0,0,0.04);transition:transform 0.1s,box-shadow 0.15s,opacity 0.15s;}
   .funnel-card:active{cursor:grabbing;}
-  .funnel-card.dragging{opacity:0.4;}
-  .funnel-col.drag-over{outline:2px dashed #2563eb;background:#dbeafe !important;}
+  .funnel-card.dragging{opacity:0.35;transform:scale(0.97);box-shadow:0 4px 12px rgba(0,0,0,0.15);}
+  .funnel-col.drag-over{outline:2px dashed #2563eb !important;background:#dbeafe !important;transform:scale(1.02);transition:transform 0.15s;}
+  .funnel-col{border-radius:8px;padding:8px;transition:transform 0.15s,background 0.15s;min-height:80px;}
+  .col-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;padding-bottom:4px;}
+  .col-header h4{margin:0;font-size:12px;font-weight:700;}
+  .col-sum{font-size:11px;font-weight:600;color:#374151;background:rgba(255,255,255,0.7);padding:2px 6px;border-radius:8px;}
+  .card-actions{display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin-top:6px;}
+  .ico-btn{background:#f3f4f6;border:1px solid #e5e7eb;border-radius:6px;padding:4px 8px;font-size:13px;cursor:pointer;line-height:1;}
+  .ico-btn:hover{background:#e5e7eb;}
+  .ico-btn.danger{color:#dc2626;}
+  .ico-btn.danger:hover{background:#fee2e2;}
+  .status-pill{display:inline-block;padding:4px 10px;border-radius:14px;font-size:11px;font-weight:600;cursor:pointer;flex:1;text-align:center;min-width:90px;border:none;}
+  .status-pill-new{background:#dbeafe;color:#1e40af;}
+  .status-pill-active{background:#fed7aa;color:#9a3412;}
+  .status-pill-done{background:#d1fae5;color:#047857;}
+  .status-pill-archive{background:#fecaca;color:#991b1b;}
+  .paid-btn{padding:4px 8px;border-radius:14px;font-size:13px;border:none;cursor:pointer;font-weight:600;line-height:1;}
+  .paid-yes{background:#d1fae5;color:#047857;}
+  .paid-no{background:#fef3c7;color:#92400e;}
+  .card-note{font-size:11px;color:#6b7280;background:#fef9c3;padding:4px 6px;border-radius:4px;margin-top:4px;border-left:2px solid #eab308;}
   .funnel-card .amt{font-weight:700;color:#1f2937;}
   .funnel-card .date{font-size:11px;color:#9ca3af;}
-  .paid-btn{padding:3px 10px;border-radius:12px;font-size:12px;border:none;cursor:pointer;font-weight:600;}
-  .paid-yes{background:#d1fae5;color:#047857;}
+  .funnel-card .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;}
   .paid-no{background:#fee2e2;color:#b91c1c;}
   .status-select{padding:4px 8px;border-radius:6px;font-size:12px;font-weight:600;border:none;color:#fff;background:#9ca3af;}
   .status-new{background:#2563eb;}
@@ -1398,7 +1415,7 @@ async function saveEstimate(){
     await idbPut('signatures',sigKey,dataURLtoBlob(signatureData));
   }else if(signatureData){sigKey=signatureData;} // уже ключ
   const est={
-    id:estId,client,profileName:p.name,date:new Date().toISOString(),works,mats,
+    id:estId,schemaVersion:1,client,profileName:p.name,date:new Date().toISOString(),works,mats,
     discount:document.getElementById('discount').value,markup:document.getElementById('markup').value,
     total:document.getElementById('finalResult').textContent,notes,
     agreedDate:document.getElementById('agreedDate')?.value||'',
@@ -1406,7 +1423,8 @@ async function saveEstimate(){
     measure:measure.L>0?measure:null,
     objectPhotos:finalObject,receiptPhotos:finalReceipt,
     signature:sigKey,
-    status:'new',paid:false,totalNum:Math.round(parseFloat(document.getElementById('finalResult').textContent.replace(/\s/g,'').replace('₽',''))||0)
+    status:'new',paid:false,note:'',
+    totalNum:Math.round(parseFloat(document.getElementById('finalResult').textContent.replace(/\s/g,'').replace('₽',''))||0)
   };
   DB.estimates.unshift(est);DB.usage.savedCount++;saveDB();
   // Очищаем черновик в памяти
@@ -1442,48 +1460,78 @@ async function loadEstimate(id){
   try{
     const e=DB.estimates.find(x=>x.id===id);
     if(!e){console.warn('loadEstimate: estimate not found',id);return;}
+    // Проверяем что смета не совсем битая
+    if(!e.id||(!e.works&&!e.mats&&!e.notes&&!e.client)){
+      const ok=confirm('Эта смета повреждена (нет данных). Удалить её?');
+      if(ok){DB.estimates=DB.estimates.filter(x=>x.id!==id);saveDB();renderEstimates();}
+      return;
+    }
+    // Миграция старых смет (без schemaVersion) — добавляем дефолты
+    if(!e.schemaVersion){
+      e.status=e.status||'new';
+      e.paid=!!e.paid;
+      e.note=e.note||'';
+      e.works=Array.isArray(e.works)?e.works:[];
+      e.mats=Array.isArray(e.mats)?e.mats:[];
+      e.objectPhotos=Array.isArray(e.objectPhotos)?e.objectPhotos.filter(Boolean):[];
+      e.receiptPhotos=Array.isArray(e.receiptPhotos)?e.receiptPhotos.filter(Boolean):[];
+      e.schemaVersion=1;
+    }
     document.getElementById('clientName').value=e.client||'';
     document.getElementById('estimateNotes').value=e.notes||'';
     if(document.getElementById('agreedDate'))document.getElementById('agreedDate').value=e.agreedDate||'';
     if(document.getElementById('agreedTime'))document.getElementById('agreedTime').value=e.agreedTime||'';
-    // Замеры
     if(document.getElementById('mLength'))document.getElementById('mLength').value=e.measure?.L||'';
     if(document.getElementById('mWidth'))document.getElementById('mWidth').value=e.measure?.W||'';
     if(document.getElementById('mHeight'))document.getElementById('mHeight').value=e.measure?.H||'';
-    calcMeasure();
-    // Сначала находим профиль, потом populate (чтобы select знал все варианты)
+    try{calcMeasure();}catch(err){console.warn('calcMeasure:',err);}
     const profMatch=DB.profiles.find(p=>p.name===e.profileName);
     if(profMatch)currentProfile=profMatch.id;
-    populateProfiles();
+    try{populateProfiles();}catch(err){console.warn('populateProfiles:',err);}
     if(document.getElementById('profileSelect')&&profMatch)document.getElementById('profileSelect').value=currentProfile;
-    // Полный сброс state
-    currentState={};
-    (e.works||[]).forEach(w=>{if(w&&w.name)currentState[w.name]=w.qty||0;});
-    (e.mats||[]).forEach(m=>{const idx=DB.mats.findIndex(x=>x.name===m.name);if(idx>-1)currentState['_mat_'+idx]=m.qty||0;});
+    // Сброс state
+    if(typeof currentState!=='object'||currentState===null)currentState={};
+    Object.keys(currentState).forEach(k=>delete currentState[k]);
+    e.works.forEach(w=>{if(w&&w.name)currentState[w.name]=Number(w.qty)||0;});
+    e.mats.forEach(m=>{
+      const idx=DB.mats.findIndex(x=>x.name===m.name);
+      if(idx>-1)currentState['_mat_'+idx]=Number(m.qty)||0;
+    });
     if(document.getElementById('discount'))document.getElementById('discount').value=e.discount||0;
     if(document.getElementById('markup'))document.getElementById('markup').value=e.markup||0;
-    objectPhotos=Array.isArray(e.objectPhotos)?e.objectPhotos.filter(Boolean):[];
-    receiptPhotos=Array.isArray(e.receiptPhotos)?e.receiptPhotos.filter(Boolean):[];
-    releaseAllPhotoURLs();
-    // Подпись
+    objectPhotos=e.objectPhotos.slice();
+    receiptPhotos=e.receiptPhotos.slice();
+    try{releaseAllPhotoURLs();}catch(err){console.warn('releaseAllPhotoURLs:',err);}
     signatureData=null;
-    if(e.signature&&!e.signature.startsWith('data:')){
+    if(e.signature&&!String(e.signature).startsWith('data:')){
       try{
         const blob=await idbGet('signatures',e.signature);
         if(blob){
-          const url=URL.createObjectURL(blob);
           signatureData=e.signature;
           const c=document.getElementById('sigCanvas');
-          if(c){const ctx=c.getContext('2d');const img=new Image();img.onload=()=>{ctx.drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);};img.src=url;}
+          if(c){
+            const url=URL.createObjectURL(blob);
+            const ctx=c.getContext('2d');
+            const img=new Image();
+            img.onload=()=>{try{ctx.drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);}catch(err){console.warn(err);}};
+            img.onerror=()=>URL.revokeObjectURL(url);
+            img.src=url;
+          }
         }
       }catch(err){console.warn('loadEstimate: signature load failed',err);}
     }
-    renderCalc();
-    switchTab('calc');
-    console.log('loadEstimate: OK',id,'works:',(e.works||[]).length,'photos:',objectPhotos.length);
+    try{renderCalc();}catch(err){console.warn('renderCalc:',err);}
+    try{calcTotals();}catch(err){console.warn('calcTotals:',err);}
+    try{switchTab('calc');}catch(err){console.warn('switchTab:',err);}
+    console.log('loadEstimate: OK',id,'works:',e.works.length,'photos:',objectPhotos.length);
   }catch(err){
     console.error('loadEstimate: FATAL',err);
-    alert('Не удалось открыть смету: '+err.message);
+    const msg=`Не удалось открыть смету: ${err.message}\n\nПопробуйте:\n1. Очистить данные: DevTools → Application → Storage → Clear\n2. Обновить страницу: Cmd+Shift+R`;
+    if(confirm(msg+'\n\nУдалить эту смету?')){
+      DB.estimates=DB.estimates.filter(x=>x.id!==id);
+      saveDB();
+      renderEstimates();
+    }
   }
 }
 async function deleteEstimate(id){
@@ -1540,42 +1588,57 @@ function renderCRM(){
 
   const colTitles={new:'🆕 Новые',active:'🟠 В работе',done:'🟢 Готово',archive:'🔴 Архив'};
   const colColors={new:'#eff6ff',active:'#fffbeb',done:'#ecfdf5',archive:'#fef2f2'};
+  const colBorders={new:'#3b82f6',active:'#f59e0b',done:'#10b981',archive:'#ef4444'};
+  const statusPills={new:'🆕 Новый',active:'🟠 В работе',done:'🟢 Готово',archive:'🔴 Архив'};
+  // Суммы по колонкам
+  const colSums={new:0,active:0,done:0,archive:0};
+  Object.keys(cols).forEach(s=>{cols[s].forEach(e=>{colSums[s]+=Number(e.totalNum)||0;});});
+  const fmtSum=n=>Math.round(n).toLocaleString('ru-RU');
 
   let html='<div class="crm-funnel">';
   for(const s of ['new','active','done','archive']){
-    html+='<div class="funnel-col" data-status="'+s+'" style="background:'+colColors[s]+'" ondragover="kanbanDragOver(event)" ondragleave="kanbanDragLeave(event)" ondrop="kanbanDrop(event)">';
-    html+='<h4>'+colTitles[s]+' ('+cols[s].length+')</h4>';
-    if(cols[s].length===0) html+='<p class="kanban-hint">—</p>';
+    html+='<div class="funnel-col" data-status="'+s+'" style="background:'+colColors[s]+';border-top:3px solid '+colBorders[s]+'">';
+    html+='<div class="col-header">';
+    html+='<h4 style="color:'+colBorders[s]+'">'+colTitles[s]+' ('+cols[s].length+')</h4>';
+    if(cols[s].length>0)html+='<div class="col-sum">'+fmtSum(colSums[s])+' ₽</div>';
+    html+='</div>';
+    if(cols[s].length===0) html+='<p class="kanban-hint">— перетащите сюда —</p>';
     else{
       cols[s].forEach(e=>{
         const d=new Date(e.date).toLocaleDateString('ru-RU',{day:'numeric',month:'short'});
         const paidBtn=e.paid?
-          '<button class="paid-yes" onclick="toggleEstimatePaid('+e.id+')">✅ Опл.</button>':
-          '<button class="paid-no" onclick="toggleEstimatePaid('+e.id+')">❌ Нет</button>';
+          '<button class="paid-btn paid-yes" onclick="toggleEstimatePaid('+e.id+')" title="Оплачен">✅</button>':
+          '<button class="paid-btn paid-no" onclick="toggleEstimatePaid('+e.id+')" title="Не оплачен">⏳</button>';
+        const note=e.note?'<div class="card-note">📝 '+escapeHtml(e.note.slice(0,60))+(e.note.length>60?'…':'')+'</div>':'';
+        const photoBadge=(e.objectPhotos?.length||0)>0?' 📷'+(e.objectPhotos?.length||0):'';
         html+='<div class="funnel-card" draggable="true" data-id="'+e.id+'" ondragstart="kanbanDragStart(event)" ondragend="kanbanDragEnd(event)">'+
-          '<div class="top"><b>'+e.client+'</b> <span class="amt">'+e.total+'</span></div>'+
-          '<div class="date">'+d+' · '+e.profileName+'</div>'+
-          '<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;align-items:center;">'+paidBtn+
-          '<select class="status-select '+getStatusClass(e.status)+'" onchange="updateEstimateStatus('+e.id+',this.value)">'+
-          '<option value="new" '+(e.status==='new'?'selected':'')+'>🆕 Новый</option>'+
-          '<option value="active" '+(e.status==='active'?'selected':'')+'>🟠 В работе</option>'+
-          '<option value="done" '+(e.status==='done'?'selected':'')+'>🟢 Готово</option>'+
-          '<option value="archive" '+(e.status==='archive'?'selected':'')+'>🔴 Архив</option>'+
-          '</select>'+
-          '<button class="secondary" style="font-size:12px;margin-left:auto;" onclick="loadEstimate('+e.id+')">📂</button>'+
-          '<button class="danger" style="font-size:12px;" onclick="deleteEstimate('+e.id+')">🗑</button>'+
-          '</div></div>';
+          '<div class="top"><b>'+escapeHtml(e.client||'Без имени')+'</b> <span class="amt">'+fmtSum(Number(e.totalNum)||0)+' ₽</span></div>'+
+          '<div class="date">'+d+' · '+escapeHtml(e.profileName||'')+photoBadge+'</div>'+
+          note+
+          '<div class="card-actions">'+
+            paidBtn+
+            '<span class="status-pill status-pill-'+s+'" onclick="cycleStatus('+e.id+')" title="Кликни чтобы сменить статус">'+statusPills[s]+'</span>'+
+            '<button class="ico-btn" onclick="openEstimateNote('+e.id+')" title="Заметка">📝</button>'+
+            '<button class="ico-btn" onclick="loadEstimate('+e.id+')" title="Открыть">📂</button>'+
+            '<button class="ico-btn danger" onclick="deleteEstimate('+e.id+')" title="Удалить">🗑</button>'+
+          '</div>'+
+        '</div>';
       });
     }
     html+='</div>';
   }
   html+='</div>';
-  html+='<p class="small" style="margin-top:6px;text-align:center;color:#6b7280;">💡 Перетащите карточку в другую колонку или используйте выпадающий список</p>';
+  html+='<p class="small" style="margin-top:6px;text-align:center;color:#6b7280;">💡 Перетащите карточку или нажмите на плашку статуса</p>';
   cont.innerHTML=html;
   updateCrmCounters();
 }
 
-// Минимальный drag-and-drop: перетащи карточку в другую колонку
+// HTML-escape для безопасности
+function escapeHtml(s){
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Drag-and-drop с визуальным feedback
 let _dragEstId=null;
 function kanbanDragStart(ev){
   _dragEstId=ev.currentTarget.dataset.id;
@@ -1585,13 +1648,18 @@ function kanbanDragStart(ev){
 }
 function kanbanDragEnd(ev){
   ev.currentTarget.classList.remove('dragging');
+  document.querySelectorAll('.funnel-col.drag-over').forEach(c=>c.classList.remove('drag-over'));
+  _dragEstId=null;
 }
 function kanbanDragOver(ev){
   ev.preventDefault();
   ev.dataTransfer.dropEffect='move';
-  ev.currentTarget.classList.add('drag-over');
+  const col=ev.currentTarget;
+  if(!col.classList.contains('drag-over'))col.classList.add('drag-over');
 }
 function kanbanDragLeave(ev){
+  // Не убираем класс если переходим на дочерний элемент
+  if(ev.currentTarget.contains(ev.relatedTarget))return;
   ev.currentTarget.classList.remove('drag-over');
 }
 function kanbanDrop(ev){
@@ -1603,6 +1671,28 @@ function kanbanDrop(ev){
   const e=DB.estimates.find(x=>x.id===id);
   if(!e||e.status===newStatus)return;
   e.status=newStatus;
+  saveDB();
+  renderCRM();
+}
+
+// Цикл статусов по клику на плашку (Новый→В работе→Готово→Архив→Новый)
+function cycleStatus(id){
+  const order=['new','active','done','archive'];
+  const e=DB.estimates.find(x=>x.id===id);
+  if(!e)return;
+  const cur=order.indexOf(e.status);
+  e.status=order[(cur+1)%order.length];
+  saveDB();
+  renderCRM();
+}
+
+// Заметка к сметке
+function openEstimateNote(id){
+  const e=DB.estimates.find(x=>x.id===id);
+  if(!e)return;
+  const note=prompt('Заметка к сметe для '+(e.client||'клиента')+':',e.note||'');
+  if(note===null)return;
+  e.note=note.trim();
   saveDB();
   renderCRM();
 }
@@ -2395,7 +2485,7 @@ function applyTheme(t){
 })();
 
 // === Версия приложения (для отображения и кеша SW) ===
-const APP_VERSION='1.4.8';
+const APP_VERSION='1.4.9';
 console.log('Калькулятор смет PRO v'+APP_VERSION);
 
 // === DEV-режим: ?dev=1 в URL открывает все PRO-функции ===
