@@ -1,6 +1,6 @@
 {
-  "version": "1.4.8",
-  "changelog": "Канбан с drag-and-drop (минимальное точечное изменение поверх v1.4.5)",
+  "version": "1.4.9",
+  "changelog": "CRM v2: цветные плашки, drag-and-drop, заметки, счётчики сумм; loadEstimate: schemaVersion + защита от битых смет; бот: выбор тарифа, защита от мошенничества, статистика; инструкция для клиента",
   "releaseDate": "2026-06-15",
   "updateUrl": "",
   "minSupported": "1.0.0",
