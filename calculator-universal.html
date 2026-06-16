@@ -116,42 +116,7 @@
   .locked{opacity:.5;position:relative;}
   .locked::after{content:"🔒";position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:18px;}
   .feature-list{text-align:left;margin-top:10px;}
-  .feature-list li{margin:6px 0;font-size:14px;}
-  .funnel-card{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:8px;margin-bottom:6px;font-size:13px;cursor:grab;box-shadow:0 1px 2px rgba(0,0,0,0.04);transition:transform 0.1s,box-shadow 0.15s,opacity 0.15s;}
-  .funnel-card:active{cursor:grabbing;}
-  .funnel-card.dragging{opacity:0.35;transform:scale(0.97);box-shadow:0 4px 12px rgba(0,0,0,0.15);}
-  .funnel-col.drag-over{outline:2px dashed #2563eb !important;background:#dbeafe !important;transform:scale(1.02);transition:transform 0.15s;}
-  .funnel-col{border-radius:8px;padding:8px;transition:transform 0.15s,background 0.15s;min-height:80px;}
-  .col-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;padding-bottom:4px;}
-  .col-header h4{margin:0;font-size:12px;font-weight:700;}
-  .col-sum{font-size:11px;font-weight:600;color:#374151;background:rgba(255,255,255,0.7);padding:2px 6px;border-radius:8px;}
-  .card-actions{display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin-top:6px;}
-  .ico-btn{background:#f3f4f6;border:1px solid #e5e7eb;border-radius:6px;padding:4px 8px;font-size:13px;cursor:pointer;line-height:1;}
-  .ico-btn:hover{background:#e5e7eb;}
-  .ico-btn.danger{color:#dc2626;}
-  .ico-btn.danger:hover{background:#fee2e2;}
-  .status-pill{display:inline-block;padding:4px 10px;border-radius:14px;font-size:11px;font-weight:600;cursor:pointer;flex:1;text-align:center;min-width:90px;border:none;}
-  .status-pill-new{background:#dbeafe;color:#1e40af;}
-  .status-pill-active{background:#fed7aa;color:#9a3412;}
-  .status-pill-done{background:#d1fae5;color:#047857;}
-  .status-pill-archive{background:#fecaca;color:#991b1b;}
-  .paid-btn{padding:4px 8px;border-radius:14px;font-size:13px;border:none;cursor:pointer;font-weight:600;line-height:1;}
-  .paid-yes{background:#d1fae5;color:#047857;}
-  .paid-no{background:#fef3c7;color:#92400e;}
-  .card-note{font-size:11px;color:#6b7280;background:#fef9c3;padding:4px 6px;border-radius:4px;margin-top:4px;border-left:2px solid #eab308;}
-  .funnel-card .amt{font-weight:700;color:#1f2937;}
-  .funnel-card .date{font-size:11px;color:#9ca3af;}
-  .funnel-card .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;}
-  .paid-no{background:#fee2e2;color:#b91c1c;}
-  .status-select{padding:4px 8px;border-radius:6px;font-size:12px;font-weight:600;border:none;color:#fff;background:#9ca3af;}
-  .status-new{background:#2563eb;}
-  .status-active{background:#d97706;}
-  .status-done{background:#059669;}
-  .status-archive{background:#dc2626;}
-  .funnel-col{flex:1;min-width:130px;background:#f9fafb;border-radius:8px;padding:6px;}
-  .funnel-col h4{margin:0 0 6px;font-size:11px;color:#6b7280;text-align:center;border-bottom:1px solid #e5e7eb;padding-bottom:4px;}
-  .kanban-hint{font-size:12px;color:#9ca3af;text-align:center;margin:6px 0;}
-  .crm-funnel{display:flex;gap:6px;margin-bottom:8px;overflow-x:auto;padding-bottom:4px;}
+  /* CRM-стили (funnel-card/funnel-col/kanban-hint/crm-funnel/status-pill-*) удалены в v1.4.11 */
 </style>
 </head>
 <body>
@@ -179,7 +144,6 @@
 <div class="tabs">
   <button class="tab active" onclick="switchTab('calc')">➕ Смета</button>
   <button class="tab" onclick="switchTab('estimates')">📁 Сметы</button>
-  <button class="tab" onclick="switchTab('crm')">🧑‍💼 Клиенты</button>
   <button class="tab" onclick="switchTab('pro')">⭐ PRO</button>
   <button class="tab" onclick="switchTab('profile')">⚙ Профиль</button>
 </div>
@@ -348,98 +312,10 @@
   </div>
   <div id="estimatesUnlocked" class="hidden">
     <!-- ФИЛЬТРЫ И СЧЁТЧИКИ (ИСТОРИЯ) -->
-    <div class="card">
-      <div class="row" style="flex-wrap:wrap;gap:6px;">
-        <div style="flex:0 0 auto;min-width:80px;">
-          <div style="font-size:12px;color:#6b7280;">Всего:</div>
-          <div id="statTotal" style="font-size:20px;font-weight:700;">0</div>
-        </div>
-        <div style="flex:0 0 auto;min-width:80px;">
-          <div style="font-size:12px;color:#d97706;">В работе:</div>
-          <div id="statActive" style="font-size:20px;font-weight:700;color:#d97706;">0</div>
-        </div>
-        <div style="flex:0 0 auto;min-width:80px;">
-          <div style="font-size:12px;color:#059669;">Завершено:</div>
-          <div id="statDone" style="font-size:20px;font-weight:700;color:#059669;">0</div>
-        </div>
-        <div style="flex:0 0 auto;min-width:80px;">
-          <div style="font-size:12px;color:#dc2626;">Архив:</div>
-          <div id="statArchive" style="font-size:20px;font-weight:700;color:#dc2626;">0</div>
-        </div>
-        <div style="flex:0 0 auto;min-width:80px;">
-          <div style="font-size:12px;color:#2563eb;">💰 Оплачено:</div>
-          <div id="statPaid" style="font-size:20px;font-weight:700;color:#2563eb;">0</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="row" style="gap:4px;">
-        <button id="filterAll" class="tab active" onclick="setFilter('all')" style="flex:1;min-width:auto;">Все</button>
-        <button id="filterActive" class="tab" onclick="setFilter('active')" style="flex:1;min-width:auto;">🟠 В работе</button>
-        <button id="filterDone" class="tab" onclick="setFilter('done')" style="flex:1;min-width:auto;">🟢 Завершено</button>
-        <button id="filterArchive" class="tab" onclick="setFilter('archive')" style="flex:1;min-width:auto;">🔴 Архив</button>
-        <button id="filterUnpaid" class="tab" onclick="setFilter('unpaid')" style="flex:1;min-width:auto;">❌ Не оплачено</button>
-      </div>
-    </div>
+    <!-- (v1.4.11: счётчики и фильтры убраны — простой список) -->
 
     <div class="card">
       <div id="estimatesList"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ВКЛАДКА: КЛИЕНТЫ (CRM) -->
-<div id="sec-crm" class="section">
-  <div id="crmLocked" class="paywall">
-    <h3>🧑‍💼 CRM и клиенты</h3>
-    <p>Ведите клиентов: статусы, оплата, воронка.</p>
-    <div class="price">490 ₽/мес</div>
-    <button class="ok" onclick="unlockDemo()">Активировать PRO (тест)</button>
-  </div>
-  <div id="crmUnlocked" class="hidden">
-    <!-- Счётчики -->
-    <div class="card">
-      <div class="row" style="flex-wrap:wrap;gap:6px;">
-        <div style="flex:0 0 auto;min-width:80px;">
-          <div style="font-size:12px;color:#6b7280;">Всего:</div>
-          <div id="crmStatTotal" style="font-size:20px;font-weight:700;">0</div>
-        </div>
-        <div style="flex:0 0 auto;min-width:80px;">
-          <div style="font-size:12px;color:#2563eb;">Новые:</div>
-          <div id="crmStatNew" style="font-size:20px;font-weight:700;color:#2563eb;">0</div>
-        </div>
-        <div style="flex:0 0 auto;min-width:80px;">
-          <div style="font-size:12px;color:#d97706;">В работе:</div>
-          <div id="crmStatActive" style="font-size:20px;font-weight:700;color:#d97706;">0</div>
-        </div>
-        <div style="flex:0 0 auto;min-width:80px;">
-          <div style="font-size:12px;color:#059669;">Готово:</div>
-          <div id="crmStatDone" style="font-size:20px;font-weight:700;color:#059669;">0</div>
-        </div>
-        <div style="flex:0 0 auto;min-width:80px;">
-          <div style="font-size:12px;color:#7c3aed;">💰 Оплачено:</div>
-          <div id="crmStatRevenue" style="font-size:18px;font-weight:700;color:#7c3aed;">0₽</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Фильтры -->
-    <div class="card">
-      <div class="row" style="gap:4px;">
-        <button id="crmFilterAll" class="tab active" onclick="setCrmFilter('all')" style="flex:1;min-width:auto;">Все</button>
-        <button id="crmFilterNew" class="tab" onclick="setCrmFilter('new')" style="flex:1;min-width:auto;">🆕 Новые</button>
-        <button id="crmFilterActive" class="tab" onclick="setCrmFilter('active')" style="flex:1;min-width:auto;">🟠 В работе</button>
-        <button id="crmFilterDone" class="tab" onclick="setCrmFilter('done')" style="flex:1;min-width:auto;">🟢 Готово</button>
-        <button id="crmFilterArchive" class="tab" onclick="setCrmFilter('archive')" style="flex:1;min-width:auto;">🔴 Архив</button>
-        <button id="crmFilterUnpaid" class="tab" onclick="setCrmFilter('unpaid')" style="flex:1;min-width:auto;">🚫 Долг</button>
-      </div>
-    </div>
-
-    <!-- Список клиентов: воронка -->
-    <div class="card" id="crmListCard">
-      <h2>📊 Воронка (Kanban)</h2>
-      <div id="crmList"></div>
     </div>
   </div>
 </div>
@@ -937,7 +813,7 @@ function switchTab(name){
   if(event&&event.target) event.target.classList.add('active');
   document.getElementById('sec-'+name).classList.add('active');
   if(name==='estimates') renderEstimates();
-  if(name==='crm') renderCRM();
+  if(name==='profile') renderProfile();
   if(name==='pro') renderProPage();
 }
 
@@ -1086,8 +962,7 @@ function updateUIState(){
 
   document.getElementById('estimatesLocked').classList.toggle('hidden',isPro);
   document.getElementById('estimatesUnlocked').classList.toggle('hidden',!isPro);
-  document.getElementById('crmLocked').classList.toggle('hidden',isPro);
-  document.getElementById('crmUnlocked').classList.toggle('hidden',!isPro);
+  // (CRM-вкладка удалена в v1.4.11)
 
   // Статус в Профиле
   const sp=document.getElementById('proStatusShort');
@@ -1154,9 +1029,9 @@ function renderCalc(){
     const qty=currentState[w.name]||0;
     const div=document.createElement('div');div.className='work-row';
     div.innerHTML=
-      '<input type="checkbox" '+(qty>0?'checked':'')+' onchange="toggleWork(\''+w.name.replace(/'/g,"\\'")+'\',this.checked)">'+
+      '<input type="checkbox" id="cb_'+cssId(w.name)+'" '+(qty>0?'checked':'')+' onchange="toggleWork(\''+w.name.replace(/'/g,"\\'")+'\',this.checked)">'+
       '<div class="title">'+w.name+' <span class="price">('+w.price+' ₽/'+w.unit+')</span></div>'+
-      '<input type="number" class="qty" value="'+qty+'" min="0" onchange="setWorkQty(\''+w.name.replace(/'/g,"\\'")+'\',this.value)">'+
+      '<input type="number" id="qty_'+cssId(w.name)+'" class="qty" value="'+qty+'" min="0" onchange="setWorkQty(\''+w.name.replace(/'/g,"\\'")+'\',this.value)">'+
       '<div style="flex:0 0 60px;text-align:right" class="small" id="sum-'+i+'">'+(qty*w.price)+' ₽</div>';
     cont.appendChild(div);
   });
@@ -1450,7 +1325,7 @@ function renderEstimates(){
     html+='<div class="estimate-item">'+
       '<div class="top"><span class="client">'+e.client+'</span> <span class="chip accent">'+e.profileName+'</span>'+photoInfo+timeInfo+measureInfo+'</div>'+
       '<div class="date">'+d+' → '+e.total+'</div>'+
-      '<div style="margin-top:6px;"><button class="secondary" style="width:auto;padding:5px 10px;font-size:12px;margin-top:0;display:inline-block" onclick="loadEstimate('+e.id+')">📂 Открыть</button> <button class="danger" style="width:auto;padding:5px 10px;font-size:12px;margin-top:0;display:inline-block" onclick="deleteEstimate('+e.id+')">🗑</button></div>'+
+      '<div style="margin-top:6px;"><button class="secondary" style="width:auto;padding:5px 10px;font-size:12px;margin-top:0;display:inline-block" onclick="loadEstimate(\''+e.id+'\')">📂 Открыть</button> <button class="danger" style="width:auto;padding:5px 10px;font-size:12px;margin-top:0;display:inline-block" onclick="deleteEstimate(\''+e.id+'\')">🗑</button></div>'+
     '</div>';
   });
   cont.innerHTML=html;
@@ -1460,11 +1335,12 @@ async function loadEstimate(id){
   try{
     const e=DB.estimates.find(x=>x.id===id);
     if(!e){console.warn('loadEstimate: estimate not found',id);return;}
-    // Проверяем что смета не совсем битая
-    if(!e.id||(!e.works&&!e.mats&&!e.notes&&!e.client)){
-      const ok=confirm('Эта смета повреждена (нет данных). Удалить её?');
-      if(ok){DB.estimates=DB.estimates.filter(x=>x.id!==id);saveDB();renderEstimates();}
-      return;
+    // Проверяем что смета не совсем битая (есть хоть какие-то данные)
+    // ВАЖНО: НЕ предлагаем удалять — может потеряться рабочая смета без заметки.
+    // Если совсем пустая — просто предупреждаем.
+    if(!e.id||(!(e.works&&e.works.length)&&!(e.mats&&e.mats.length)&&!e.client)){
+      console.warn('loadEstimate: estimate is empty, but keep it. id=',id);
+      // Не удаляем, просто загружаем пустую форму
     }
     // Миграция старых смет (без schemaVersion) — добавляем дефолты
     if(!e.schemaVersion){
@@ -1478,7 +1354,7 @@ async function loadEstimate(id){
       e.schemaVersion=1;
     }
     document.getElementById('clientName').value=e.client||'';
-    document.getElementById('estimateNotes').value=e.notes||'';
+    document.getElementById('estimateNotes').value=e.note||e.notes||'';
     if(document.getElementById('agreedDate'))document.getElementById('agreedDate').value=e.agreedDate||'';
     if(document.getElementById('agreedTime'))document.getElementById('agreedTime').value=e.agreedTime||'';
     if(document.getElementById('mLength'))document.getElementById('mLength').value=e.measure?.L||'';
@@ -1543,176 +1419,6 @@ async function deleteEstimate(id){
     if(e.signature){await idbDelete('signatures',e.signature).catch(()=>{});}
   }
   DB.estimates=DB.estimates.filter(x=>x.id!==id);saveDB();renderEstimates();
-}
-
-// ═══════════════════════════════════════════════════════
-//  CRM: КЛИЕНТЫ, ВОРОНКА, ОПЛАТА
-// ═══════════════════════════════════════════════════════
-let crmFilter='all';
-function setCrmFilter(f){crmFilter=f;renderCRM();}
-
-function getStatusClass(s){
-  const map={new:'status-new',active:'status-active',done:'status-done',archive:'status-archive'};
-  return map[s]||'status-select';
-}
-
-function updateEstimateStatus(id,newStatus){
-  const e=DB.estimates.find(x=>x.id===id);if(!e)return;
-  e.status=newStatus;saveDB();renderCRM();renderEstimates();
-}
-function toggleEstimatePaid(id){
-  const e=DB.estimates.find(x=>x.id===id);if(!e)return;
-  e.paid=!e.paid;saveDB();renderCRM();renderEstimates();
-}
-
-function renderCRM(){
-  const cont=document.getElementById('crmList');
-  if(!cont)return;
-  if(DB.estimates.length===0){cont.innerHTML='<p class="small">Нет клиентов. Создайте смету — клиент появится здесь.</p>';updateCrmCounters();return;}
-  let list=DB.estimates.slice();
-  if(crmFilter!=='all'){
-    if(crmFilter==='unpaid')list=list.filter(e=>!e.paid);
-    else list=list.filter(e=>e.status===crmFilter);
-  }
-  ['all','new','active','done','archive','unpaid'].forEach(f=>{
-    const btn=document.getElementById('crmFilter'+f.charAt(0).toUpperCase()+f.slice(1));
-    if(btn) btn.classList.toggle('active',crmFilter===f);
-  });
-  if(list.length===0){cont.innerHTML='<p class="small">Нет клиентов в этом фильтре.</p>';updateCrmCounters();return;}
-
-  const cols={new:[],active:[],done:[],archive:[]};
-  list.forEach(e=>{
-    const s=['new','active','done','archive'].includes(e.status)?e.status:'new';
-    cols[s].push(e);
-  });
-
-  const colTitles={new:'🆕 Новые',active:'🟠 В работе',done:'🟢 Готово',archive:'🔴 Архив'};
-  const colColors={new:'#eff6ff',active:'#fffbeb',done:'#ecfdf5',archive:'#fef2f2'};
-  const colBorders={new:'#3b82f6',active:'#f59e0b',done:'#10b981',archive:'#ef4444'};
-  const statusPills={new:'🆕 Новый',active:'🟠 В работе',done:'🟢 Готово',archive:'🔴 Архив'};
-  // Суммы по колонкам
-  const colSums={new:0,active:0,done:0,archive:0};
-  Object.keys(cols).forEach(s=>{cols[s].forEach(e=>{colSums[s]+=Number(e.totalNum)||0;});});
-  const fmtSum=n=>Math.round(n).toLocaleString('ru-RU');
-
-  let html='<div class="crm-funnel">';
-  for(const s of ['new','active','done','archive']){
-    html+='<div class="funnel-col" data-status="'+s+'" style="background:'+colColors[s]+';border-top:3px solid '+colBorders[s]+'">';
-    html+='<div class="col-header">';
-    html+='<h4 style="color:'+colBorders[s]+'">'+colTitles[s]+' ('+cols[s].length+')</h4>';
-    if(cols[s].length>0)html+='<div class="col-sum">'+fmtSum(colSums[s])+' ₽</div>';
-    html+='</div>';
-    if(cols[s].length===0) html+='<p class="kanban-hint">— перетащите сюда —</p>';
-    else{
-      cols[s].forEach(e=>{
-        const d=new Date(e.date).toLocaleDateString('ru-RU',{day:'numeric',month:'short'});
-        const paidBtn=e.paid?
-          '<button class="paid-btn paid-yes" onclick="toggleEstimatePaid('+e.id+')" title="Оплачен">✅</button>':
-          '<button class="paid-btn paid-no" onclick="toggleEstimatePaid('+e.id+')" title="Не оплачен">⏳</button>';
-        const note=e.note?'<div class="card-note">📝 '+escapeHtml(e.note.slice(0,60))+(e.note.length>60?'…':'')+'</div>':'';
-        const photoBadge=(e.objectPhotos?.length||0)>0?' 📷'+(e.objectPhotos?.length||0):'';
-        html+='<div class="funnel-card" draggable="true" data-id="'+e.id+'" ondragstart="kanbanDragStart(event)" ondragend="kanbanDragEnd(event)">'+
-          '<div class="top"><b>'+escapeHtml(e.client||'Без имени')+'</b> <span class="amt">'+fmtSum(Number(e.totalNum)||0)+' ₽</span></div>'+
-          '<div class="date">'+d+' · '+escapeHtml(e.profileName||'')+photoBadge+'</div>'+
-          note+
-          '<div class="card-actions">'+
-            paidBtn+
-            '<span class="status-pill status-pill-'+s+'" onclick="cycleStatus('+e.id+')" title="Кликни чтобы сменить статус">'+statusPills[s]+'</span>'+
-            '<button class="ico-btn" onclick="openEstimateNote('+e.id+')" title="Заметка">📝</button>'+
-            '<button class="ico-btn" onclick="loadEstimate('+e.id+')" title="Открыть">📂</button>'+
-            '<button class="ico-btn danger" onclick="deleteEstimate('+e.id+')" title="Удалить">🗑</button>'+
-          '</div>'+
-        '</div>';
-      });
-    }
-    html+='</div>';
-  }
-  html+='</div>';
-  html+='<p class="small" style="margin-top:6px;text-align:center;color:#6b7280;">💡 Перетащите карточку или нажмите на плашку статуса</p>';
-  cont.innerHTML=html;
-  updateCrmCounters();
-}
-
-// HTML-escape для безопасности
-function escapeHtml(s){
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// Drag-and-drop с визуальным feedback
-let _dragEstId=null;
-function kanbanDragStart(ev){
-  _dragEstId=ev.currentTarget.dataset.id;
-  ev.currentTarget.classList.add('dragging');
-  ev.dataTransfer.effectAllowed='move';
-  try{ev.dataTransfer.setData('text/plain',_dragEstId);}catch(e){}
-}
-function kanbanDragEnd(ev){
-  ev.currentTarget.classList.remove('dragging');
-  document.querySelectorAll('.funnel-col.drag-over').forEach(c=>c.classList.remove('drag-over'));
-  _dragEstId=null;
-}
-function kanbanDragOver(ev){
-  ev.preventDefault();
-  ev.dataTransfer.dropEffect='move';
-  const col=ev.currentTarget;
-  if(!col.classList.contains('drag-over'))col.classList.add('drag-over');
-}
-function kanbanDragLeave(ev){
-  // Не убираем класс если переходим на дочерний элемент
-  if(ev.currentTarget.contains(ev.relatedTarget))return;
-  ev.currentTarget.classList.remove('drag-over');
-}
-function kanbanDrop(ev){
-  ev.preventDefault();
-  ev.currentTarget.classList.remove('drag-over');
-  const newStatus=ev.currentTarget.dataset.status;
-  const id=parseInt(_dragEstId||ev.dataTransfer.getData('text/plain'),10);
-  if(!id||!newStatus)return;
-  const e=DB.estimates.find(x=>x.id===id);
-  if(!e||e.status===newStatus)return;
-  e.status=newStatus;
-  saveDB();
-  renderCRM();
-}
-
-// Цикл статусов по клику на плашку (Новый→В работе→Готово→Архив→Новый)
-function cycleStatus(id){
-  const order=['new','active','done','archive'];
-  const e=DB.estimates.find(x=>x.id===id);
-  if(!e)return;
-  const cur=order.indexOf(e.status);
-  e.status=order[(cur+1)%order.length];
-  saveDB();
-  renderCRM();
-}
-
-// Заметка к сметке
-function openEstimateNote(id){
-  const e=DB.estimates.find(x=>x.id===id);
-  if(!e)return;
-  const note=prompt('Заметка к сметe для '+(e.client||'клиента')+':',e.note||'');
-  if(note===null)return;
-  e.note=note.trim();
-  saveDB();
-  renderCRM();
-}
-
-function updateCrmCounters(){
-  const total=DB.estimates.length;
-  const newC=DB.estimates.filter(e=>e.status==='new').length;
-  const act=DB.estimates.filter(e=>e.status==='active').length;
-  const done=DB.estimates.filter(e=>e.status==='done').length;
-  const rev=DB.estimates.filter(e=>e.paid).reduce((s,e)=>s+(e.totalNum||0),0);
-  const elTotal=document.getElementById('crmStatTotal');
-  const elNew=document.getElementById('crmStatNew');
-  const elAct=document.getElementById('crmStatActive');
-  const elDone=document.getElementById('crmStatDone');
-  const elRev=document.getElementById('crmStatRevenue');
-  if(elTotal) elTotal.textContent=total;
-  if(elNew) elNew.textContent=newC;
-  if(elAct) elAct.textContent=act;
-  if(elDone) elDone.textContent=done;
-  if(elRev) elRev.textContent=rev.toLocaleString('ru-RU')+' ₽';
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2262,7 +1968,7 @@ function startReminderPoll(){
 // ═══════════════════════════════════════════════════════
 
 function unlockDemo(){
-  DB.usage.isPro=true;saveDB();updateUIState();renderCRM();alert('PRO активирован (тестовый режим на этом устройстве)');
+  DB.usage.isPro=true;saveDB();updateUIState();alert('PRO активирован (тестовый режим на этом устройстве)');
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2485,7 +2191,7 @@ function applyTheme(t){
 })();
 
 // === Версия приложения (для отображения и кеша SW) ===
-const APP_VERSION='1.4.9';
+const APP_VERSION='1.4.12';
 console.log('Калькулятор смет PRO v'+APP_VERSION);
 
 // === DEV-режим: ?dev=1 в URL открывает все PRO-функции ===

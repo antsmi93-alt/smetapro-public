@@ -4,7 +4,7 @@
 //  Версия кеша: v1.0.0
 // =============================================================
 
-const CACHE_VERSION = 'smeta-pro-1.4.9';
+const CACHE_VERSION = 'smeta-pro-1.4.12';
 const APP_SHELL = [
   './',
   './calculator-universal.html',
